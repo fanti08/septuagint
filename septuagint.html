@@ -7,20 +7,26 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#fcfaf8">
-    <title>Septuagint Parallel Reader</title>
+    <meta name="theme-color" content="#fff7ed">
+    <title>Fanti's Septuagint</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
+            --theme-primary: #c2410c;
+            /* Orange-700 */
+            --theme-accent: #f59e0b;
+            /* Amber-500 */
+            --theme-bg: #fff7ed;
+            /* Orange-50 */
         }
 
         html {
@@ -30,28 +36,36 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #fcfaf8;
+            background-color: var(--theme-bg);
             height: 100%;
             height: 100dvh;
             overflow: hidden;
+        }
+
+        /* Font Styles */
+        h1,
+        h2,
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
         }
 
         .bible-text {
             font-family: 'Crimson Pro', serif;
             line-height: 1.6;
             font-size: 1.3rem;
-            color: #1c1917;
+            color: #292524;
             text-align: justify;
             -webkit-text-size-adjust: 100%;
         }
 
         @media (min-width: 768px) {
             .bible-text {
-                font-size: 1.4rem;
-                line-height: 1.7;
+                font-size: 1.45rem;
+                line-height: 1.75;
             }
         }
 
+        /* Custom Scrollbar (Warm Tones) */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -62,12 +76,12 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #d6d3d1;
+            background: #fed7aa;
             border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e;
+            background: #fdba74;
         }
 
         .scroll-container {
@@ -75,7 +89,7 @@
             overscroll-behavior-y: contain;
         }
 
-        /* Inline Verse (Single View) */
+        /* --- Verse Styling: Inline Mode --- */
         .verse-inline {
             display: inline;
             position: relative;
@@ -88,16 +102,20 @@
             line-height: 1.8;
         }
 
-        .verse-inline:hover {
-            background-color: #f5f5f4;
+        /* Mobile Hover Fix */
+        @media (hover: hover) {
+            .verse-inline:hover {
+                background-color: #ffedd5;
+            }
         }
 
         .verse-inline.selected {
-            background-color: #e0f2fe;
+            background-color: #fed7aa;
         }
 
+        /* Orange-200 */
         .verse-inline.bookmarked {
-            background-color: #fef9c3;
+            background-color: #fef08a;
             border-bottom: 2px solid #ca8a04;
         }
 
@@ -105,43 +123,53 @@
             font-family: 'Inter', sans-serif;
             font-size: 0.75rem;
             font-weight: 700;
-            color: #a8a29e;
+            color: #9a3412;
+            /* Orange-800 */
             user-select: none;
             vertical-align: super;
             margin-right: 3px;
             margin-left: 3px;
+            opacity: 0.7;
         }
 
-        /* Block Verse (Parallel View) */
+        /* --- Verse Styling: Block Mode --- */
         .verse-block {
             position: relative;
             padding: 10px;
-            /* Reduced padding */
             margin-bottom: 0;
-            /* Remove margin, handled by grid gap */
             border-left: 3px solid transparent;
             background-color: white;
             border-radius: 6px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-            line-height: 1.6;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+            font-size: 1rem;
+            /* Slightly smaller for side-by-side mobile */
+        }
+
+        @media (min-width: 768px) {
+            .verse-block {
+                font-size: 1.3rem;
+                line-height: 1.6;
+                padding: 16px;
+            }
         }
 
         .verse-block.selected {
-            background-color: #e0f2fe;
-            border-left-color: #0284c7;
+            background-color: #ffedd5;
+            border-left-color: #ea580c;
         }
 
         .verse-block.bookmarked {
-            background-color: #fef9c3;
+            background-color: #fef08a;
             border-left-color: #ca8a04;
         }
 
         .verse-num-block {
             font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            color: #a8a29e;
-            margin-right: 0.5rem;
+            color: #9a3412;
+            margin-right: 0.4rem;
             display: inline-block;
         }
 
@@ -151,7 +179,7 @@
 
         @keyframes flash-highlight {
             0% {
-                background-color: #fde047;
+                background-color: #fcd34d;
             }
 
             100% {
@@ -159,21 +187,20 @@
             }
         }
 
-        /* Parallel Layout Config */
+        /* --- Parallel Layout Config (Side-by-Side on Mobile) --- */
         .parallel-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            /* Reduced gap on mobile */
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* Forced side-by-side */
+            gap: 0.75rem;
+            /* Tight gap for mobile */
+            align-items: start;
+            /* Align tops of verses */
         }
 
         @media (min-width: 1024px) {
             .parallel-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                /* Explicit two column */
-                gap: 2rem;
-                /* Tighter gap */
+                gap: 3rem;
                 max-width: 100%;
             }
         }
@@ -193,30 +220,30 @@
             color: #57534e;
             cursor: pointer;
             background-color: white;
-            border: 1px solid #e7e5e4;
+            border: 1px solid #fed7aa;
         }
 
         .chapter-btn:active {
-            background-color: #e7e5e4;
+            background-color: #ffedd5;
         }
 
         .chapter-btn.active {
-            background-color: #2563eb;
+            background-color: #c2410c;
             color: white;
             font-weight: bold;
-            border-color: #2563eb;
+            border-color: #c2410c;
         }
 
         .chapter-btn.read {
-            background-color: #dcfce7;
-            color: #166534;
-            border-color: #bbf7d0;
+            background-color: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
         }
 
         .chapter-btn.active.read {
-            background-color: #15803d;
+            background-color: #b45309;
             color: white;
-            border-color: #15803d;
+            border-color: #b45309;
         }
 
         .progress-ring-circle {
@@ -232,11 +259,13 @@
         .sidebar-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(67, 20, 7, 0.4);
+            /* Dark orange tint */
             z-index: 25;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
         }
 
         .sidebar-overlay.open {
@@ -246,7 +275,7 @@
 
         /* --- Cinematic Share Card --- */
         .cinematic-card {
-            background: linear-gradient(145deg, #1c1917 0%, #292524 100%);
+            background: linear-gradient(145deg, #0c0a09 0%, #1c1917 100%);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
             border: 1px solid #44403c;
             position: relative;
@@ -260,7 +289,7 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(251, 146, 60, 0.3), transparent);
         }
 
         .cinematic-text {
@@ -271,168 +300,229 @@
         .cinematic-ref {
             font-family: 'Cinzel', serif;
             letter-spacing: 0.05em;
-            color: #d6d3d1;
+            color: #fdba74;
+            /* Orange-300 */
+        }
+
+        /* Word Highlighting Styles */
+        .share-word {
+            display: inline-block;
+            padding: 0 2px;
+            border-radius: 2px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .share-word:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .hl-red {
+            color: #fca5a5;
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+        }
+
+        .hl-orange {
+            color: #fdba74;
+            text-shadow: 0 0 10px rgba(234, 88, 12, 0.5);
+        }
+
+        .hl-yellow {
+            color: #fde047;
+            text-shadow: 0 0 10px rgba(202, 138, 4, 0.5);
+        }
+
+        /* Color Selector Buttons */
+        .color-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .color-btn:active {
+            transform: scale(0.9);
+        }
+
+        .color-btn.active {
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
 
-<body class="h-full flex overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+<body class="h-full flex overflow-hidden selection:bg-orange-200 selection:text-orange-900">
 
     <div id="sidebarOverlay" class="sidebar-overlay md:hidden"></div>
 
     <aside
-        class="w-full md:w-80 bg-white border-r border-stone-200 flex flex-col flex-shrink-0 z-30 fixed md:relative h-full transition-transform transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none pt-[env(safe-area-inset-top)]"
+        class="w-full md:w-80 bg-white border-r border-orange-100 flex flex-col flex-shrink-0 z-30 fixed md:relative h-full transition-transform transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none pt-[env(safe-area-inset-top)]"
         id="sidebar">
-        <div class="p-4 border-b border-stone-100 bg-white flex-shrink-0">
-            <div class="flex justify-between items-center mb-4">
+        <div class="p-5 border-b border-orange-100 bg-white flex-shrink-0">
+            <div class="flex justify-between items-center mb-6">
                 <h1 class="font-bold text-xl text-stone-800 tracking-tight flex items-center">
-                    <span class="bg-blue-600 text-white rounded-lg p-1.5 mr-2 text-sm"><i
-                            class="fas fa-cross"></i></span>
-                    Septuagint<span class="text-blue-600">+</span>
+                    <span
+                        class="bg-gradient-to-br from-orange-600 to-red-700 text-white rounded-lg p-1.5 mr-2 text-sm shadow-md"><i
+                            class="fas fa-scroll"></i></span>
+                    Fanti's<span class="text-orange-700 ml-1">Septuagint</span>
                 </h1>
-                <button id="closeSidebar" class="md:hidden text-stone-500 p-2 rounded-full hover:bg-stone-100"><i
+                <button id="closeSidebar"
+                    class="md:hidden text-stone-400 p-2 rounded-full hover:bg-orange-50 hover:text-orange-600"><i
                         class="fas fa-times text-xl"></i></button>
             </div>
 
-            <div class="bg-stone-50 rounded-lg p-3 flex items-center shadow-sm border border-stone-100">
-                <div class="relative w-12 h-12 mr-3 flex-shrink-0">
-                    <svg class="w-12 h-12" viewBox="0 0 100 100">
-                        <circle class="text-stone-200 stroke-current" stroke-width="8" cx="50" cy="50" r="40"
+            <div
+                class="bg-gradient-to-br from-orange-50 to-white rounded-xl p-4 flex items-center shadow-sm border border-orange-100">
+                <div class="relative w-14 h-14 mr-4 flex-shrink-0">
+                    <svg class="w-14 h-14" viewBox="0 0 100 100">
+                        <circle class="text-orange-100 stroke-current" stroke-width="8" cx="50" cy="50" r="40"
                             fill="transparent"></circle>
-                        <circle id="progressCircle" class="text-green-500 progress-ring-circle stroke-current"
+                        <circle id="progressCircle" class="text-orange-600 progress-ring-circle stroke-current"
                             stroke-width="8" stroke-linecap="round" cx="50" cy="50" r="40" fill="transparent"
                             stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
                     </svg>
                     <div
-                        class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-xs font-bold text-stone-600">
+                        class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-xs font-bold text-orange-800">
                         <span id="progressText">0%</span>
                     </div>
                 </div>
                 <div>
-                    <div class="text-xs text-stone-500 uppercase font-bold tracking-wide">Chapters Read</div>
-                    <div class="text-sm font-semibold text-stone-800"><span id="chaptersReadCount">0</span> / <span
-                            id="totalChaptersCount">0</span></div>
+                    <div class="text-[10px] text-orange-400 uppercase font-bold tracking-widest mb-1">Total Progress
+                    </div>
+                    <div class="text-sm font-semibold text-stone-800"><span id="chaptersReadCount"
+                            class="text-lg">0</span> <span class="text-stone-400 text-xs">/ <span
+                                id="totalChaptersCount">0</span> Chapters</span></div>
                 </div>
             </div>
         </div>
 
-        <div id="resumeContainer" class="hidden p-2 border-b border-stone-100 bg-amber-50 flex-shrink-0">
+        <div id="resumeContainer" class="hidden p-2 border-b border-orange-100 bg-amber-50 flex-shrink-0">
             <div class="flex items-center w-full gap-2">
                 <button id="resumeBtn"
-                    class="flex-grow text-left text-sm text-amber-800 font-semibold hover:text-amber-900 flex items-center p-3 rounded transition-colors hover:bg-amber-100 active:bg-amber-200">
+                    class="flex-grow text-left text-sm text-amber-900 font-semibold hover:text-amber-800 flex items-center p-3 rounded-lg transition-colors hover:bg-amber-100 active:bg-amber-200">
                     <i class="fas fa-bookmark mr-3 text-amber-600"></i> Continue
                     <span id="resumeRef"
-                        class="ml-auto text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold"></span>
+                        class="ml-auto text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-bold shadow-sm"></span>
                 </button>
                 <button id="clearBookmarkBtn"
-                    class="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    class="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     title="Remove Bookmark">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
         </div>
 
-        <div class="flex border-b border-stone-200 text-sm font-medium bg-stone-50 flex-shrink-0">
-            <button class="flex-1 py-4 text-blue-700 border-b-2 border-blue-600 bg-white" id="tabBooks">Books</button>
+        <div class="flex border-b border-orange-100 text-sm font-medium bg-orange-50/50 flex-shrink-0">
+            <button class="flex-1 py-4 text-orange-700 border-b-2 border-orange-600 bg-white"
+                id="tabBooks">Books</button>
             <button class="flex-1 py-4 text-stone-500 hover:text-stone-700 hover:bg-white transition-colors"
                 id="tabCollections">Collections</button>
         </div>
 
-        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1 pb-20 md:pb-2 scroll-container"></div>
+        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1 pb-24 md:pb-2 scroll-container"></div>
 
-        <div id="collectionsPanel" class="hidden flex-1 flex flex-col overflow-hidden h-full bg-stone-50">
-            <div class="p-3 border-b border-stone-200 bg-white sticky top-0 z-10">
+        <div id="collectionsPanel" class="hidden flex-1 flex flex-col overflow-hidden h-full bg-orange-50/30">
+            <div class="p-3 border-b border-orange-100 bg-white sticky top-0 z-10">
                 <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-3 text-stone-400 text-sm"></i>
-                    <input type="text" id="collectionSearch" placeholder="Filter collections..."
-                        class="w-full pl-10 pr-3 py-2.5 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <i class="fas fa-search absolute left-3 top-3 text-orange-300 text-sm"></i>
+                    <input type="text" id="collectionSearch" placeholder="Search collections..."
+                        class="w-full pl-10 pr-3 py-2.5 text-sm border border-orange-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all placeholder-orange-200 text-stone-600">
                 </div>
             </div>
-            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4 pb-20 md:pb-4 scroll-container"></div>
+            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4 pb-24 md:pb-4 scroll-container"></div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col w-full relative h-full bg-[#fcfaf8] pt-[env(safe-area-inset-top)]">
+    <main class="flex-1 flex flex-col w-full relative h-full bg-[#fff7ed] pt-[env(safe-area-inset-top)]">
         <header
-            class="h-16 bg-white/95 backdrop-blur border-b border-stone-200 flex items-center justify-between px-4 shadow-sm z-20 flex-shrink-0 sticky top-0">
+            class="h-16 bg-white/90 backdrop-blur-md border-b border-orange-100 flex items-center justify-between px-4 shadow-sm z-20 flex-shrink-0 sticky top-0 transition-all">
             <div class="flex items-center space-x-3 overflow-hidden">
-                <button id="openSidebar" class="md:hidden text-stone-600 p-2 -ml-2 rounded active:bg-stone-100"><i
+                <button id="openSidebar" class="md:hidden text-stone-500 p-2 -ml-2 rounded active:bg-orange-50"><i
                         class="fas fa-bars text-xl"></i></button>
                 <div class="flex flex-col overflow-hidden">
-                    <h2 id="currentBookTitle" class="font-bold text-stone-900 text-lg leading-none truncate">Genesis
-                    </h2>
-                    <span class="text-xs text-stone-500 font-medium mt-0.5 uppercase tracking-wide">Chapter <span
+                    <h2 id="currentBookTitle"
+                        class="font-bold text-stone-900 text-lg leading-none truncate font-cinzel">Genesis</h2>
+                    <span class="text-xs text-orange-600 font-bold mt-0.5 uppercase tracking-wide">Chapter <span
                             id="currentChapterDisplay">1</span></span>
                 </div>
             </div>
 
             <div class="flex items-center space-x-2 flex-shrink-0">
-                <div class="flex items-center bg-stone-100 rounded-lg p-1 border border-stone-200">
+                <div class="flex items-center bg-orange-50 rounded-lg p-1 border border-orange-100">
                     <button id="prevChapter"
-                        class="w-9 h-9 flex items-center justify-center text-stone-600 active:bg-white active:shadow-sm rounded transition-all"><i
+                        class="w-9 h-9 flex items-center justify-center text-stone-500 active:bg-white active:shadow-sm active:text-orange-600 rounded transition-all"><i
                             class="fas fa-chevron-left"></i></button>
-                    <div class="w-px h-4 bg-stone-300 mx-1"></div>
+                    <div class="w-px h-4 bg-orange-200 mx-1"></div>
                     <button id="nextChapter"
-                        class="w-9 h-9 flex items-center justify-center text-stone-600 active:bg-white active:shadow-sm rounded transition-all"><i
+                        class="w-9 h-9 flex items-center justify-center text-stone-500 active:bg-white active:shadow-sm active:text-orange-600 rounded transition-all"><i
                             class="fas fa-chevron-right"></i></button>
                 </div>
                 <button id="viewToggle"
-                    class="flex items-center justify-center w-9 h-9 md:w-auto md:px-3 md:py-1.5 text-sm font-semibold rounded-lg bg-white border border-stone-300 text-stone-700 active:bg-stone-50 shadow-sm transition-all">
-                    <i class="fas fa-columns md:mr-2 text-stone-500"></i> <span id="viewLabel"
+                    class="flex items-center justify-center w-9 h-9 md:w-auto md:px-4 md:py-1.5 text-sm font-semibold rounded-lg bg-white border border-orange-200 text-stone-600 active:bg-orange-50 shadow-sm transition-all hover:text-orange-700 hover:border-orange-300">
+                    <i class="fas fa-columns md:mr-2 text-orange-400"></i> <span id="viewLabel"
                         class="hidden md:inline">Parallel</span>
                 </button>
             </div>
         </header>
 
         <div id="readerContainer"
-            class="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-10 scroll-smooth relative scroll-container">
+            class="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-10 scroll-smooth relative scroll-container bg-[#fff7ed]">
 
             <!-- Parallel Headers: Matched Gap to Grid -->
             <div id="parallelHeaders"
-                class="hidden grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-4 pb-2 border-b border-stone-200 sticky top-0 bg-[#fcfaf8]/95 backdrop-blur z-10 pt-2 text-center md:text-left">
-                <div class="hidden md:block font-bold text-stone-600 text-sm">LES</div>
-                <div class="hidden md:block font-bold text-stone-600 text-sm">NASB</div>
+                class="hidden grid-cols-2 gap-3 md:gap-8 mb-4 pb-2 border-b border-orange-200 sticky top-0 bg-[#fff7ed]/95 backdrop-blur z-10 pt-2 text-left">
+                <div class="font-bold text-orange-800 text-xs md:text-sm uppercase tracking-widest pl-1">LES <span
+                        class="hidden md:inline text-orange-300 font-normal ml-2">Septuagint</span></div>
+                <div class="font-bold text-orange-800 text-xs md:text-sm uppercase tracking-widest pl-1">NASB</div>
             </div>
 
             <div id="readerContent" class="max-w-3xl mx-auto bible-text min-h-[50vh] pb-[env(safe-area-inset-bottom)]">
-                <div class="flex flex-col items-center justify-center h-64 text-stone-400">
-                    <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-blue-500"></i>
-                    <p class="font-sans text-sm">Loading Bible...</p>
+                <div class="flex flex-col items-center justify-center h-64 text-orange-300">
+                    <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-orange-500"></i>
+                    <p class="font-sans text-sm text-stone-500">Loading Scripture...</p>
                 </div>
             </div>
 
             <div id="chapterFooter"
-                class="max-w-3xl mx-auto mt-8 mb-32 pt-6 border-t border-stone-200 flex justify-center hidden">
+                class="max-w-3xl mx-auto mt-12 mb-32 pt-8 border-t border-orange-200 flex justify-center hidden">
                 <button id="markReadBtn"
-                    class="flex items-center space-x-3 px-8 py-4 bg-white border border-stone-300 rounded-full shadow-sm active:scale-95 transition-all group w-full md:w-auto justify-center">
+                    class="flex items-center space-x-3 px-8 py-4 bg-white border border-orange-200 rounded-full shadow-sm hover:shadow-md active:scale-95 transition-all group w-full md:w-auto justify-center">
                     <div
-                        class="w-6 h-6 border-2 border-stone-300 rounded-full group-hover:border-green-500 flex items-center justify-center">
+                        class="w-6 h-6 border-2 border-stone-300 rounded-full group-hover:border-green-500 flex items-center justify-center transition-colors">
                         <div id="readCheck" class="w-3.5 h-3.5 bg-green-500 rounded-full hidden"></div>
                     </div>
-                    <span class="font-sans font-medium text-stone-600 text-lg group-hover:text-green-700">Mark Chapter
-                        Complete</span>
+                    <span
+                        class="font-sans font-medium text-stone-600 text-lg group-hover:text-green-700 transition-colors">Mark
+                        Chapter Complete</span>
                 </button>
             </div>
         </div>
 
         <div id="actionBar"
-            class="absolute left-1/2 transform -translate-x-1/2 bg-stone-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center space-x-5 z-30 transition-all duration-300 translate-y-40 opacity-0 border border-stone-700 max-w-[95%] w-auto whitespace-nowrap">
-            <span class="text-sm font-medium font-sans"><span id="selectedCount"
-                    class="font-bold text-blue-400">0</span> <span class="hidden md:inline">selected</span></span>
+            class="absolute left-1/2 transform -translate-x-1/2 bg-stone-900/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-6 z-30 transition-all duration-300 translate-y-40 opacity-0 border border-stone-700 max-w-[95%] w-auto whitespace-nowrap">
+            <span class="text-sm font-medium font-sans text-orange-100"><span id="selectedCount"
+                    class="font-bold text-orange-400">0</span> <span class="hidden md:inline">selected</span></span>
             <div class="h-5 w-px bg-stone-700"></div>
-            <button id="btnBookmark" class="p-1 active:text-amber-400 transition-colors flex flex-col items-center"
+            <button id="btnBookmark"
+                class="p-1 text-stone-300 hover:text-amber-400 active:text-amber-400 transition-colors flex flex-col items-center"
                 title="Set Bookmark">
                 <i class="fas fa-bookmark text-lg"></i>
             </button>
-            <button id="btnShare" class="p-1 active:text-purple-400 transition-colors flex flex-col items-center"
+            <button id="btnShare"
+                class="p-1 text-stone-300 hover:text-purple-400 active:text-purple-400 transition-colors flex flex-col items-center"
                 title="Share Quote">
                 <i class="fas fa-share-alt text-lg"></i>
             </button>
-            <button id="btnCollection" class="p-1 active:text-blue-400 transition-colors flex flex-col items-center"
+            <button id="btnCollection"
+                class="p-1 text-stone-300 hover:text-blue-400 active:text-blue-400 transition-colors flex flex-col items-center"
                 title="Add to Collection">
                 <i class="fas fa-folder-plus text-lg"></i>
             </button>
-            <button id="btnClearSelection" class="p-1 active:text-red-400 transition-colors flex flex-col items-center"
+            <button id="btnClearSelection"
+                class="p-1 text-stone-300 hover:text-red-400 active:text-red-400 transition-colors flex flex-col items-center"
                 title="Clear">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -441,31 +531,44 @@
 
     <!-- Share Modal -->
     <div id="shareModal"
-        class="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] hidden items-center justify-center p-4">
-        <div class="w-full max-w-lg flex flex-col">
-            <div class="flex justify-end mb-2">
-                <button id="closeShareModal" class="text-white/70 hover:text-white p-2"><i
-                        class="fas fa-times text-xl"></i></button>
-            </div>
-
-            <!-- Screenshottable Area -->
-            <div id="shareCard"
-                class="cinematic-card rounded-lg p-8 md:p-12 text-center flex flex-col justify-center min-h-[300px]">
-                <div class="flex-grow flex items-center justify-center">
-                    <p id="shareText"
-                        class="cinematic-text text-xl md:text-2xl text-stone-100 leading-relaxed font-serif italic"></p>
+        class="fixed inset-0 bg-black/90 backdrop-blur-lg z-[60] hidden flex-col items-center justify-center p-4">
+        <div id="shareUIContainer" class="w-full max-w-lg flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex space-x-3 items-center">
+                    <span class="text-xs text-stone-400 font-bold uppercase tracking-wider">Highlight:</span>
+                    <!-- Color Picker -->
+                    <button class="color-btn bg-red-400" data-color="red" title="Red"></button>
+                    <button class="color-btn bg-orange-400" data-color="orange" title="Orange"></button>
+                    <button class="color-btn bg-yellow-400" data-color="yellow" title="Yellow"></button>
+                    <button class="color-btn bg-stone-600" data-color="clear" title="Clear Highlight"><i
+                            class="fas fa-eraser text-[10px] text-white"></i></button>
                 </div>
-                <div class="mt-8 text-right border-t border-white/20 pt-4">
-                    <span id="shareRef"
-                        class="cinematic-ref text-sm md:text-base font-bold text-amber-500 block"></span>
-                    <span class="text-[10px] text-stone-500 uppercase tracking-widest mt-1 block">Septuagint
-                        Reader</span>
+                <div class="flex space-x-3">
+                    <button id="readyToSnapBtn"
+                        class="text-xs bg-stone-800 hover:bg-stone-700 text-white px-3 py-1.5 rounded border border-stone-600 transition-colors"><i
+                            class="fas fa-camera mr-1"></i> Preview</button>
+                    <button id="closeShareModal" class="text-white/70 hover:text-white"><i
+                            class="fas fa-times text-xl"></i></button>
                 </div>
             </div>
+        </div>
 
-            <div class="mt-4 text-center text-white/50 text-sm">
-                Take a screenshot to share
+        <!-- Screenshottable Area -->
+        <div id="shareCard"
+            class="cinematic-card rounded-lg p-8 md:p-12 text-center flex flex-col justify-center min-h-[300px] w-full max-w-lg cursor-default">
+            <div class="flex-grow flex items-center justify-center">
+                <p id="shareText" class="cinematic-text text-xl md:text-2xl text-stone-200 leading-relaxed font-serif">
+                </p>
             </div>
+            <div class="mt-10 text-right border-t border-white/10 pt-5">
+                <span id="shareRef" class="cinematic-ref text-sm md:text-base font-bold text-orange-400 block"></span>
+                <span class="text-[10px] text-stone-600 font-bold uppercase tracking-[0.2em] mt-1 block">Fanti's
+                    Septuagint</span>
+            </div>
+        </div>
+
+        <div id="shareInstructions" class="mt-6 text-center text-stone-500 text-xs animate-pulse">
+            Select colors above, tap words to highlight.<br>Click "Preview" to hide UI for screenshot.
         </div>
     </div>
 
@@ -473,28 +576,28 @@
     <div id="collectionModal"
         class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div
-            class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100 max-h-[80vh] flex flex-col">
+            class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100 max-h-[80vh] flex flex-col border border-orange-100">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-stone-800 font-serif">Add to Collection</h3>
+                <h3 class="text-xl font-bold text-stone-800 font-cinzel">Add to Collection</h3>
                 <button id="closeModal" class="text-stone-400 p-2 rounded-full hover:bg-stone-100"><i
                         class="fas fa-times text-lg"></i></button>
             </div>
             <div class="mb-6">
-                <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">New
+                <label class="block text-xs font-bold text-orange-800 uppercase tracking-wide mb-2">New
                     Collection</label>
                 <div class="flex shadow-sm">
                     <input type="text" id="newCollectionName"
-                        class="flex-1 border border-stone-300 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                        class="flex-1 border border-orange-200 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 font-sans"
                         placeholder="e.g., Prophecies...">
                     <button id="createCollectionBtn"
-                        class="bg-blue-600 text-white px-5 py-2 rounded-r-lg active:bg-blue-700 font-medium transition-colors">Create</button>
+                        class="bg-orange-600 text-white px-5 py-2 rounded-r-lg active:bg-orange-700 font-medium transition-colors font-cinzel text-sm">Create</button>
                 </div>
             </div>
             <div class="flex-1 overflow-hidden flex flex-col">
-                <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Or Select
+                <label class="block text-xs font-bold text-orange-800 uppercase tracking-wide mb-2">Or Select
                     Existing</label>
                 <div id="modalCollectionList"
-                    class="border border-stone-200 rounded-lg overflow-y-auto bg-stone-50 flex-1 scroll-container">
+                    class="border border-orange-100 rounded-lg overflow-y-auto bg-orange-50/50 flex-1 scroll-container">
                 </div>
             </div>
         </div>
@@ -524,7 +627,8 @@
             selectedVerses: new Set(),
             bookmarks: null,
             collections: {},
-            readChapters: []
+            readChapters: [],
+            shareColor: 'red' // Default highlight color
         };
 
         async function initApp() {
@@ -585,15 +689,14 @@
             const isParallel = state.viewMode === 'parallel';
 
             if (isParallel) {
-                // FIXED: Bible Text font applied here too
                 contentDiv.className = "parallel-grid min-h-[50vh] pb-[env(safe-area-inset-bottom)] bible-text";
-
+                // Show headers: Grid for desktop, Flex row for mobile alignment? No, grid works best.
                 headers.classList.remove('hidden');
-                headers.classList.add('hidden', 'md:grid');
+                headers.classList.add('grid'); // Force grid even on mobile
             } else {
                 contentDiv.className = "max-w-3xl mx-auto bible-text min-h-[50vh] pt-2 pb-[env(safe-area-inset-bottom)]";
                 headers.classList.add('hidden');
-                headers.classList.remove('md:grid');
+                headers.classList.remove('grid');
             }
 
             contentDiv.innerHTML = '';
@@ -605,7 +708,7 @@
             if (!chapterData || chapterData.length === 0) {
                 contentDiv.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center h-64 text-center p-8">
-                        <i class="fas fa-feather-alt text-4xl text-stone-300 mb-4"></i>
+                        <i class="fas fa-feather-alt text-4xl text-orange-200 mb-4"></i>
                         <h3 class="text-lg font-bold text-stone-600 mb-2">Text Coming Soon</h3>
                         <p class="text-stone-500 text-sm">Content for ${state.book} ${state.chapter} has not been added yet.</p>
                     </div>`;
@@ -625,7 +728,6 @@
                         el.dataset.ref = refId;
                         el.dataset.ver = ver;
                         el.innerHTML = `
-                            <div class="text-xs font-bold text-stone-400 mb-1 uppercase tracking-wider md:hidden">${ver}</div>
                             <span class="verse-num-block">${v.verse}</span>
                             <span class="text-base text-stone-800 leading-relaxed">${v.text[ver] || "—"}</span>
                         `;
@@ -653,6 +755,124 @@
                 }, 100);
             }
         }
+
+        // --- Interaction Logic ---
+
+        function toggleSelection(e, refId) {
+            // Prevent text selection drag from triggering logic
+            if (window.getSelection().toString().length > 0) return;
+
+            const els = document.querySelectorAll(`[data-ref="${refId}"]`);
+            if (state.selectedVerses.has(refId)) {
+                state.selectedVerses.delete(refId);
+                els.forEach(el => el.classList.remove('selected'));
+            } else {
+                state.selectedVerses.add(refId);
+                els.forEach(el => el.classList.add('selected'));
+            }
+            updateActionBar();
+        }
+
+        function clearSelection() {
+            state.selectedVerses.clear();
+            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+            updateActionBar();
+        }
+
+        function updateActionBar() {
+            const bar = document.getElementById('actionBar');
+            const count = state.selectedVerses.size;
+            document.getElementById('selectedCount').textContent = count;
+            count > 0 ? bar.classList.remove('translate-y-40', 'opacity-0') : bar.classList.add('translate-y-40', 'opacity-0');
+        }
+
+        // --- Share Logic (Updated for Highlights) ---
+        function generateShareCard() {
+            const selectedArray = Array.from(state.selectedVerses).map(ref => {
+                const [b, c, v] = ref.split('|');
+                return { ref, b, c, v: parseInt(v) };
+            }).sort((a, b) => a.v - b.v);
+
+            if (selectedArray.length === 0) return;
+
+            const container = document.getElementById('shareText');
+            container.innerHTML = ''; // Clear prev
+
+            let fullHTML = "";
+            let refText = "";
+
+            selectedArray.forEach((item, index) => {
+                // Determine selector based on view mode.
+                const selector = state.viewMode === 'parallel'
+                    ? `[data-ref="${item.ref}"][data-ver="LES"]`
+                    : `[data-ref="${item.ref}"]`;
+
+                const el = document.querySelector(selector) || document.querySelector(`[data-ref="${item.ref}"]`);
+                if (el) {
+                    let text = "";
+                    if (state.viewMode === 'single') {
+                        const clone = el.cloneNode(true);
+                        const sup = clone.querySelector('sup');
+                        if (sup) sup.remove();
+                        text = clone.textContent.trim();
+                    } else {
+                        text = el.querySelector('span.text-base')?.textContent || el.textContent.replace(/^\d+/, '');
+                    }
+
+                    // Split into interactive words
+                    const words = text.trim().split(/\s+/);
+                    const wordSpans = words.map(w => `<span class="share-word">${w}</span>`).join(' ');
+                    fullHTML += wordSpans + " ";
+                }
+            });
+
+            container.innerHTML = fullHTML;
+
+            // Add Click Listeners for Highlighting
+            container.querySelectorAll('.share-word').forEach(span => {
+                span.addEventListener('click', () => {
+                    // Remove existing colors
+                    span.classList.remove('hl-red', 'hl-orange', 'hl-yellow');
+                    if (state.shareColor !== 'clear') {
+                        span.classList.add(`hl-${state.shareColor}`);
+                    }
+                });
+            });
+
+            // Construct Reference
+            if (selectedArray.length > 0) {
+                const first = selectedArray[0];
+                const last = selectedArray[selectedArray.length - 1];
+                if (first.v === last.v) {
+                    refText = `${first.b} ${first.c}:${first.v}`;
+                } else {
+                    refText = `${first.b} ${first.c}:${first.v}-${last.v}`;
+                }
+            }
+
+            document.getElementById('shareRef').textContent = refText;
+
+            // Reset UI state
+            document.getElementById('shareUIContainer').classList.remove('hidden');
+            document.getElementById('shareInstructions').classList.remove('hidden');
+            document.getElementById('shareCard').style.cursor = "default";
+
+            // Set Default Color Active
+            state.shareColor = 'red';
+            updateColorBtns();
+
+            document.getElementById('shareModal').classList.remove('hidden');
+            document.getElementById('shareModal').classList.add('flex');
+        }
+
+        function updateColorBtns() {
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                if (btn.dataset.color === state.shareColor) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        // --- Other Logic ---
 
         window.deleteBookmark = function (e) {
             e.stopPropagation();
@@ -742,33 +962,6 @@
             document.getElementById('totalChaptersCount').textContent = totalChapters;
         }
 
-        function toggleSelection(e, refId) {
-            if (window.getSelection().toString().length > 0) return;
-
-            const els = document.querySelectorAll(`[data-ref="${refId}"]`);
-            if (state.selectedVerses.has(refId)) {
-                state.selectedVerses.delete(refId);
-                els.forEach(el => el.classList.remove('selected'));
-            } else {
-                state.selectedVerses.add(refId);
-                els.forEach(el => el.classList.add('selected'));
-            }
-            updateActionBar();
-        }
-
-        function clearSelection() {
-            state.selectedVerses.clear();
-            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-            updateActionBar();
-        }
-
-        function updateActionBar() {
-            const bar = document.getElementById('actionBar');
-            const count = state.selectedVerses.size;
-            document.getElementById('selectedCount').textContent = count;
-            count > 0 ? bar.classList.remove('translate-y-40', 'opacity-0') : bar.classList.add('translate-y-40', 'opacity-0');
-        }
-
         function saveBookmark() {
             if (state.selectedVerses.size === 0) return;
             const ref = Array.from(state.selectedVerses)[0];
@@ -806,11 +999,11 @@
                 const details = document.createElement('details');
                 details.className = "group mb-1";
                 const summary = document.createElement('summary');
-                summary.className = "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-stone-100 text-stone-700 font-medium transition-colors list-none select-none";
-                summary.innerHTML = `<span>${book}</span><i class="fas fa-chevron-down text-xs text-stone-400 transform group-open:rotate-180 transition-transform"></i>`;
+                summary.className = "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-orange-50 text-stone-700 font-medium transition-colors list-none select-none";
+                summary.innerHTML = `<span>${book}</span><i class="fas fa-chevron-down text-xs text-orange-400 transform group-open:rotate-180 transition-transform"></i>`;
 
                 const grid = document.createElement('div');
-                grid.className = "chapter-grid bg-stone-50 rounded-b-lg border-x border-b border-stone-100 mb-2";
+                grid.className = "chapter-grid bg-white rounded-b-lg border-x border-b border-orange-100 mb-2";
                 for (let i = 1; i <= chapters; i++) {
                     const isRead = state.readChapters.includes(`${book}|${i}`);
                     const btn = document.createElement('div');
@@ -832,19 +1025,19 @@
             container.innerHTML = '';
             const keys = Object.keys(state.collections);
             if (keys.length === 0) {
-                container.innerHTML = `<div class="text-center text-stone-400 mt-10"><i class="fas fa-folder-open text-3xl mb-2"></i><br>No collections yet.</div>`;
+                container.innerHTML = `<div class="text-center text-orange-300 mt-10"><i class="fas fa-folder-open text-3xl mb-2"></i><br>No collections yet.</div>`;
                 return;
             }
 
             keys.forEach(name => {
                 if (filter && !name.toLowerCase().includes(filter.toLowerCase())) return;
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-lg border border-stone-200 shadow-sm overflow-hidden group mb-4";
+                card.className = "bg-white rounded-xl border border-orange-100 shadow-sm overflow-hidden group mb-4";
                 const header = document.createElement('div');
-                header.className = "p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center";
+                header.className = "p-3 bg-orange-50 border-b border-orange-100 flex justify-between items-center";
                 header.innerHTML = `<span class="font-bold text-stone-700 text-sm truncate">${name}</span>`;
                 const delBtn = document.createElement('button');
-                delBtn.className = "text-stone-400 hover:text-red-500 w-8 h-8 flex items-center justify-center rounded hover:bg-red-50";
+                delBtn.className = "text-orange-300 hover:text-red-500 w-8 h-8 flex items-center justify-center rounded hover:bg-red-50 transition-colors";
                 delBtn.onclick = (e) => { e.stopPropagation(); window.deleteCollection(name); };
                 delBtn.innerHTML = '<i class="fas fa-trash-alt text-sm"></i>';
                 header.appendChild(delBtn);
@@ -854,9 +1047,9 @@
                 content.className = "flex flex-col";
                 state.collections[name].forEach(item => {
                     const row = document.createElement('div');
-                    row.className = "p-3 text-sm border-b border-stone-50 last:border-0 active:bg-blue-50 cursor-pointer transition-colors";
+                    row.className = "p-3 text-sm border-b border-orange-50 last:border-0 active:bg-orange-50 cursor-pointer transition-colors";
                     row.innerHTML = `
-                        <div class="font-bold text-blue-600 text-xs mb-1">${item.displayRef}</div>
+                        <div class="font-bold text-orange-600 text-xs mb-1">${item.displayRef}</div>
                         <div class="text-stone-600 text-xs font-serif leading-relaxed line-clamp-3">${item.text}</div>
                     `;
                     row.onclick = () => window.jumpToVerse(item.ref);
@@ -899,61 +1092,6 @@
             clearSelection();
         }
 
-        // --- Share Logic ---
-        function generateShareCard() {
-            const selectedArray = Array.from(state.selectedVerses).map(ref => {
-                const [b, c, v] = ref.split('|');
-                return { ref, b, c, v: parseInt(v) };
-            }).sort((a, b) => a.v - b.v);
-
-            if (selectedArray.length === 0) return;
-
-            // Gather text. Priority: Currently displayed text
-            let fullText = "";
-            let refText = "";
-
-            selectedArray.forEach((item, index) => {
-                // Determine selector based on view mode. In parallel, grabbing LES usually is safer for Septuagint reader
-                const selector = state.viewMode === 'parallel'
-                    ? `[data-ref="${item.ref}"][data-ver="LES"]`
-                    : `[data-ref="${item.ref}"]`;
-
-                const el = document.querySelector(selector) || document.querySelector(`[data-ref="${item.ref}"]`); // fallback
-                if (el) {
-                    let text = "";
-                    // Clean text (remove verse numbers if contained in textContent directly)
-                    if (state.viewMode === 'single') {
-                        // In single mode, text is inside, verse num is sup.
-                        const clone = el.cloneNode(true);
-                        const sup = clone.querySelector('sup');
-                        if (sup) sup.remove();
-                        text = clone.textContent.trim();
-                    } else {
-                        // In block mode, text is in span
-                        text = el.querySelector('span.text-base')?.textContent || el.textContent;
-                    }
-                    fullText += text.trim() + " ";
-                }
-            });
-
-            // Construct Reference
-            if (selectedArray.length > 0) {
-                const first = selectedArray[0];
-                const last = selectedArray[selectedArray.length - 1];
-                if (first.v === last.v) {
-                    refText = `${first.b} ${first.c}:${first.v}`;
-                } else {
-                    refText = `${first.b} ${first.c}:${first.v}-${last.v}`;
-                }
-            }
-
-            document.getElementById('shareText').textContent = fullText;
-            document.getElementById('shareRef').textContent = refText;
-
-            document.getElementById('shareModal').classList.remove('hidden');
-            document.getElementById('shareModal').classList.add('flex');
-        }
-
         function closeMobileSidebar() {
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -983,13 +1121,13 @@
 
             document.getElementById('tabBooks').onclick = () => {
                 document.getElementById('booksList').classList.remove('hidden'); document.getElementById('collectionsPanel').classList.add('hidden');
-                document.getElementById('tabBooks').classList.add('text-blue-700', 'border-blue-600'); document.getElementById('tabBooks').classList.remove('text-stone-500');
-                document.getElementById('tabCollections').classList.remove('text-blue-700', 'border-blue-600'); document.getElementById('tabCollections').classList.add('text-stone-500');
+                document.getElementById('tabBooks').classList.add('text-orange-700', 'border-orange-600'); document.getElementById('tabBooks').classList.remove('text-stone-500');
+                document.getElementById('tabCollections').classList.remove('text-orange-700', 'border-orange-600'); document.getElementById('tabCollections').classList.add('text-stone-500');
             };
             document.getElementById('tabCollections').onclick = () => {
                 document.getElementById('booksList').classList.add('hidden'); document.getElementById('collectionsPanel').classList.remove('hidden');
-                document.getElementById('tabCollections').classList.add('text-blue-700', 'border-blue-600'); document.getElementById('tabCollections').classList.remove('text-stone-500');
-                document.getElementById('tabBooks').classList.remove('text-blue-700', 'border-blue-600'); document.getElementById('tabBooks').classList.add('text-stone-500');
+                document.getElementById('tabCollections').classList.add('text-orange-700', 'border-orange-600'); document.getElementById('tabCollections').classList.remove('text-stone-500');
+                document.getElementById('tabBooks').classList.remove('text-orange-700', 'border-orange-600'); document.getElementById('tabBooks').classList.add('text-stone-500');
             };
             document.getElementById('resumeBtn').onclick = () => {
                 if (state.bookmarks) loadChapter(state.bookmarks.book, state.bookmarks.chapter);
@@ -1002,8 +1140,8 @@
                 const list = document.getElementById('modalCollectionList'); list.innerHTML = '';
                 Object.keys(state.collections).forEach(name => {
                     const div = document.createElement('div');
-                    div.className = "p-3 hover:bg-blue-50 cursor-pointer border-b last:border-0 border-stone-100 flex justify-between items-center group transition-colors";
-                    div.innerHTML = `<span class="font-medium text-stone-700">${name}</span><span class="text-xs text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">${state.collections[name].length}</span>`;
+                    div.className = "p-3 hover:bg-orange-50 cursor-pointer border-b last:border-0 border-orange-100 flex justify-between items-center group transition-colors";
+                    div.innerHTML = `<span class="font-medium text-stone-700">${name}</span><span class="text-xs text-orange-400 bg-orange-50 px-2 py-0.5 rounded-full">${state.collections[name].length}</span>`;
                     div.onclick = () => addToCollection(name); list.appendChild(div);
                 });
             };
@@ -1013,6 +1151,28 @@
             document.getElementById('closeShareModal').onclick = () => {
                 document.getElementById('shareModal').classList.remove('flex');
                 document.getElementById('shareModal').classList.add('hidden');
+            };
+
+            // Color Picking Logic
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.onclick = () => {
+                    state.shareColor = btn.dataset.color;
+                    updateColorBtns();
+                };
+            });
+
+            // Preview/Snap Logic
+            document.getElementById('readyToSnapBtn').onclick = () => {
+                document.getElementById('shareUIContainer').classList.add('hidden');
+                document.getElementById('shareInstructions').classList.add('hidden');
+                document.getElementById('shareCard').style.cursor = "pointer";
+                // Click card to restore
+                document.getElementById('shareCard').onclick = () => {
+                    document.getElementById('shareUIContainer').classList.remove('hidden');
+                    document.getElementById('shareInstructions').classList.remove('hidden');
+                    document.getElementById('shareCard').style.cursor = "default";
+                    document.getElementById('shareCard').onclick = null;
+                }
             };
 
             document.getElementById('createCollectionBtn').onclick = () => { const n = document.getElementById('newCollectionName').value.trim(); if (n) addToCollection(n); };
