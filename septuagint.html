@@ -3,8 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#fcfaf8">
     <title>Septuagint Parallel Reader</title>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -15,19 +20,36 @@
         rel="stylesheet">
 
     <style>
+        /* Mobile Safe Area Handling */
+        :root {
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #fcfaf8;
+            height: 100vh;
+            /* Fallback */
+            height: 100dvh;
+            /* Dynamic viewport height for mobile browsers */
         }
 
         /* Typography for Reading */
         .bible-text {
             font-family: 'Crimson Pro', serif;
             line-height: 1.6;
-            font-size: 1.35rem;
+            font-size: 1.25rem;
+            /* Slightly smaller on mobile default, scalable */
             color: #1c1917;
             text-align: justify;
-            /* Improves the book-like feel for inline text */
+            -webkit-text-size-adjust: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .bible-text {
+                font-size: 1.35rem;
+            }
         }
 
         /* Custom Scrollbar */
@@ -53,19 +75,21 @@
         .verse-inline {
             display: inline;
             position: relative;
-            padding: 2px 0;
-            cursor: text;
+            padding: 4px 0;
+            /* Increase tap area slightly */
+            cursor: pointer;
+            /* Change to pointer to indicate interactivity */
             transition: background-color 0.2s;
-            border-radius: 2px;
+            border-radius: 4px;
             box-decoration-break: clone;
             -webkit-box-decoration-break: clone;
+            line-height: 1.8;
         }
 
         .verse-inline:hover {
             background-color: #f5f5f4;
         }
 
-        /* Selection styles for inline text need to wrap nicely */
         .verse-inline.selected {
             background-color: #e0f2fe;
         }
@@ -77,27 +101,24 @@
 
         .verse-num-inline {
             font-family: 'Inter', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             color: #a8a29e;
             user-select: none;
             vertical-align: super;
             margin-right: 2px;
-            margin-left: 4px;
+            margin-left: 2px;
         }
 
         /* --- Verse Styling: Block Mode (Parallel View) --- */
         .verse-block {
             position: relative;
-            padding: 8px;
-            margin-bottom: 0;
+            padding: 12px;
+            margin-bottom: 8px;
             border-left: 3px solid transparent;
             background-color: white;
-            transition: background-color 0.2s;
-        }
-
-        .verse-block:hover {
-            background-color: #fafaf9;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .verse-block.selected {
@@ -119,7 +140,10 @@
             display: inline-block;
         }
 
-        /* Flash animation for jump-to-verse */
+        .highlight-flash {
+            animation: flash-highlight 1.5s ease-out;
+        }
+
         @keyframes flash-highlight {
             0% {
                 background-color: #fde047;
@@ -130,20 +154,18 @@
             }
         }
 
-        .highlight-flash {
-            animation: flash-highlight 2s ease-out;
-        }
-
-        /* Parallel Grid */
+        /* Parallel Grid - Stacks vertically on mobile */
         .parallel-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         @media (min-width: 1024px) {
             .parallel-grid {
+                display: grid;
                 grid-template-columns: repeat(3, 1fr);
+                gap: 2rem;
             }
         }
 
@@ -151,37 +173,45 @@
         .chapter-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            padding: 8px;
+            gap: 8px;
+            /* Bigger gap for touch */
+            padding: 12px;
         }
 
         .chapter-btn {
             text-align: center;
-            padding: 4px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            padding: 8px 0;
+            /* Taller touch target */
+            border-radius: 6px;
+            font-size: 0.9rem;
             color: #57534e;
             cursor: pointer;
+            background-color: white;
+            border: 1px solid #e7e5e4;
         }
 
-        .chapter-btn:hover {
+        .chapter-btn:active {
             background-color: #e7e5e4;
         }
 
+        /* Mobile tap state */
         .chapter-btn.active {
             background-color: #2563eb;
             color: white;
             font-weight: bold;
+            border-color: #2563eb;
         }
 
         .chapter-btn.read {
             background-color: #dcfce7;
             color: #166534;
+            border-color: #bbf7d0;
         }
 
         .chapter-btn.active.read {
             background-color: #15803d;
             color: white;
+            border-color: #15803d;
         }
 
         /* Progress Bar */
@@ -190,24 +220,48 @@
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
+
+        /* Floating Action Bar - Mobile Safe Area */
+        #actionBar {
+            bottom: calc(2rem + var(--safe-bottom));
+        }
+
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
     </style>
 </head>
 
-<body class="h-screen flex overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+<body class="h-full flex overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarOverlay" class="sidebar-overlay md:hidden"></div>
 
     <!-- Left Sidebar -->
     <aside
-        class="w-80 bg-white border-r border-stone-200 flex flex-col flex-shrink-0 z-30 md:relative absolute h-full transition-transform transform -translate-x-full md:translate-x-0 shadow-xl md:shadow-none"
+        class="w-full md:w-80 bg-white border-r border-stone-200 flex flex-col flex-shrink-0 z-30 fixed md:relative h-full transition-transform transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none pt-[env(safe-area-inset-top)]"
         id="sidebar">
         <!-- Sidebar Header -->
-        <div class="p-4 border-b border-stone-100 bg-white">
+        <div class="p-4 border-b border-stone-100 bg-white flex-shrink-0">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="font-bold text-xl text-stone-800 tracking-tight flex items-center">
                     <span class="bg-blue-600 text-white rounded-lg p-1.5 mr-2 text-sm"><i
                             class="fas fa-cross"></i></span>
                     Septuagint<span class="text-blue-600">+</span>
                 </h1>
-                <button id="closeSidebar" class="md:hidden text-stone-400 hover:text-stone-700"><i
+                <button id="closeSidebar" class="md:hidden text-stone-500 p-2 rounded-full hover:bg-stone-100"><i
                         class="fas fa-times text-xl"></i></button>
             </div>
 
@@ -234,17 +288,17 @@
             </div>
         </div>
 
-        <!-- Resume Button (With Delete Option) -->
-        <div id="resumeContainer" class="hidden p-2 border-b border-stone-100 bg-amber-50">
+        <!-- Resume Button -->
+        <div id="resumeContainer" class="hidden p-2 border-b border-stone-100 bg-amber-50 flex-shrink-0">
             <div class="flex items-center w-full gap-2">
                 <button id="resumeBtn"
-                    class="flex-grow text-left text-sm text-amber-800 font-semibold hover:text-amber-900 flex items-center p-2 rounded transition-colors hover:bg-amber-100">
+                    class="flex-grow text-left text-sm text-amber-800 font-semibold hover:text-amber-900 flex items-center p-3 rounded transition-colors hover:bg-amber-100 active:bg-amber-200">
                     <i class="fas fa-bookmark mr-3 text-amber-600"></i> Continue
                     <span id="resumeRef"
-                        class="ml-auto text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full"></span>
+                        class="ml-auto text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold"></span>
                 </button>
                 <button id="clearBookmarkBtn"
-                    class="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                    class="p-3 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
                     title="Remove Bookmark">
                     <i class="fas fa-times"></i>
                 </button>
@@ -252,14 +306,14 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <div class="flex border-b border-stone-200 text-sm font-medium bg-stone-50">
-            <button class="flex-1 py-3 text-blue-700 border-b-2 border-blue-600 bg-white" id="tabBooks">Books</button>
-            <button class="flex-1 py-3 text-stone-500 hover:text-stone-700 hover:bg-white transition-colors"
+        <div class="flex border-b border-stone-200 text-sm font-medium bg-stone-50 flex-shrink-0">
+            <button class="flex-1 py-4 text-blue-700 border-b-2 border-blue-600 bg-white" id="tabBooks">Books</button>
+            <button class="flex-1 py-4 text-stone-500 hover:text-stone-700 hover:bg-white transition-colors"
                 id="tabCollections">Collections</button>
         </div>
 
         <!-- Books Index -->
-        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1">
+        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1 pb-20 md:pb-2">
             <!-- Books injected by JS -->
         </div>
 
@@ -267,78 +321,81 @@
         <div id="collectionsPanel" class="hidden flex-1 flex flex-col overflow-hidden h-full bg-stone-50">
             <div class="p-3 border-b border-stone-200 bg-white sticky top-0 z-10">
                 <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-2.5 text-stone-400 text-sm"></i>
+                    <i class="fas fa-search absolute left-3 top-3 text-stone-400 text-sm"></i>
                     <input type="text" id="collectionSearch" placeholder="Filter collections..."
-                        class="w-full pl-9 pr-3 py-2 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        class="w-full pl-10 pr-3 py-2.5 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
             </div>
-            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4">
+            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4 pb-20 md:pb-4">
                 <!-- Collections injected by JS -->
             </div>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col w-full relative h-full bg-[#fcfaf8] overflow-hidden">
+    <main class="flex-1 flex flex-col w-full relative h-full bg-[#fcfaf8] pt-[env(safe-area-inset-top)]">
         <!-- Top Header -->
         <header
-            class="h-16 bg-white/90 backdrop-blur border-b border-stone-200 flex items-center justify-between px-4 md:px-6 shadow-sm z-20 flex-shrink-0">
-            <div class="flex items-center space-x-4">
-                <button id="openSidebar" class="md:hidden text-stone-600 p-1 hover:bg-stone-100 rounded"><i
+            class="h-16 bg-white/95 backdrop-blur border-b border-stone-200 flex items-center justify-between px-4 shadow-sm z-20 flex-shrink-0 sticky top-0">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <button id="openSidebar" class="md:hidden text-stone-600 p-2 -ml-2 rounded active:bg-stone-100"><i
                         class="fas fa-bars text-xl"></i></button>
-                <div class="flex flex-col">
-                    <h2 id="currentBookTitle" class="font-bold text-stone-900 text-lg leading-none">Genesis</h2>
-                    <span class="text-xs text-stone-500 font-medium mt-1 uppercase tracking-wide">Chapter <span
+                <div class="flex flex-col overflow-hidden">
+                    <h2 id="currentBookTitle" class="font-bold text-stone-900 text-lg leading-none truncate">Genesis
+                    </h2>
+                    <span class="text-xs text-stone-500 font-medium mt-0.5 uppercase tracking-wide">Chapter <span
                             id="currentChapterDisplay">1</span></span>
                 </div>
             </div>
 
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 flex-shrink-0">
                 <div class="flex items-center bg-stone-100 rounded-lg p-1 border border-stone-200">
                     <button id="prevChapter"
-                        class="w-8 h-8 flex items-center justify-center text-stone-600 hover:bg-white hover:shadow-sm rounded transition-all"><i
+                        class="w-9 h-9 flex items-center justify-center text-stone-600 active:bg-white active:shadow-sm rounded transition-all"><i
                             class="fas fa-chevron-left"></i></button>
                     <div class="w-px h-4 bg-stone-300 mx-1"></div>
                     <button id="nextChapter"
-                        class="w-8 h-8 flex items-center justify-center text-stone-600 hover:bg-white hover:shadow-sm rounded transition-all"><i
+                        class="w-9 h-9 flex items-center justify-center text-stone-600 active:bg-white active:shadow-sm rounded transition-all"><i
                             class="fas fa-chevron-right"></i></button>
                 </div>
                 <button id="viewToggle"
-                    class="hidden md:flex items-center px-3 py-1.5 text-sm font-semibold rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 shadow-sm transition-all">
-                    <i class="fas fa-columns mr-2 text-stone-500"></i> <span id="viewLabel">Parallel</span>
+                    class="flex items-center justify-center w-9 h-9 md:w-auto md:px-3 md:py-1.5 text-sm font-semibold rounded-lg bg-white border border-stone-300 text-stone-700 active:bg-stone-50 shadow-sm transition-all">
+                    <i class="fas fa-columns md:mr-2 text-stone-500"></i> <span id="viewLabel"
+                        class="hidden md:inline">Parallel</span>
                 </button>
             </div>
         </header>
 
         <!-- Reader Area -->
-        <div id="readerContainer" class="flex-1 overflow-y-auto px-4 py-6 md:px-12 md:py-10 scroll-smooth relative">
+        <div id="readerContainer" class="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-10 scroll-smooth relative">
 
             <!-- Parallel Headers -->
             <div id="parallelHeaders"
-                class="hidden grid-cols-3 gap-8 mb-4 pb-2 border-b border-stone-200 sticky top-0 bg-[#fcfaf8]/95 backdrop-blur z-10 pt-2">
-                <div class="text-center font-bold text-stone-600 text-sm">LES</div>
-                <div class="text-center font-bold text-stone-600 text-sm">NASB</div>
-                <div class="text-center font-bold text-stone-600 text-sm">CSB</div>
+                class="hidden grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mb-4 pb-2 border-b border-stone-200 sticky top-0 bg-[#fcfaf8]/95 backdrop-blur z-10 pt-2 text-center md:text-left">
+                <!-- Headers hidden on mobile for cleaner vertical stack, shown on desktop -->
+                <div class="hidden md:block font-bold text-stone-600 text-sm">LES</div>
+                <div class="hidden md:block font-bold text-stone-600 text-sm">NASB</div>
+                <div class="hidden md:block font-bold text-stone-600 text-sm">CSB</div>
             </div>
 
             <!-- Content -->
-            <div id="readerContent" class="max-w-3xl mx-auto bible-text min-h-[50vh]">
+            <div id="readerContent" class="max-w-3xl mx-auto bible-text min-h-[50vh] pb-[env(safe-area-inset-bottom)]">
                 <div class="flex flex-col items-center justify-center h-64 text-stone-400">
                     <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-blue-500"></i>
-                    <p class="font-sans text-sm">Loading Bible Data...</p>
+                    <p class="font-sans text-sm">Loading Bible...</p>
                 </div>
             </div>
 
             <!-- Chapter Complete Button -->
             <div id="chapterFooter"
-                class="max-w-3xl mx-auto mt-12 mb-24 pt-8 border-t border-stone-200 flex justify-center hidden">
+                class="max-w-3xl mx-auto mt-8 mb-32 pt-6 border-t border-stone-200 flex justify-center hidden">
                 <button id="markReadBtn"
-                    class="flex items-center space-x-2 px-6 py-3 bg-white border border-stone-300 rounded-full shadow-sm hover:border-green-500 hover:text-green-600 transition-all group">
+                    class="flex items-center space-x-3 px-8 py-4 bg-white border border-stone-300 rounded-full shadow-sm active:scale-95 transition-all group w-full md:w-auto justify-center">
                     <div
-                        class="w-5 h-5 border-2 border-stone-300 rounded-full group-hover:border-green-500 flex items-center justify-center">
-                        <div id="readCheck" class="w-3 h-3 bg-green-500 rounded-full hidden"></div>
+                        class="w-6 h-6 border-2 border-stone-300 rounded-full group-hover:border-green-500 flex items-center justify-center">
+                        <div id="readCheck" class="w-3.5 h-3.5 bg-green-500 rounded-full hidden"></div>
                     </div>
-                    <span class="font-sans font-medium text-stone-600 group-hover:text-green-700">Mark Chapter
+                    <span class="font-sans font-medium text-stone-600 text-lg group-hover:text-green-700">Mark Chapter
                         Complete</span>
                 </button>
             </div>
@@ -346,58 +403,57 @@
 
         <!-- Floating Action Bar -->
         <div id="actionBar"
-            class="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-stone-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-6 z-30 transition-all duration-300 translate-y-32 opacity-0 border border-stone-700">
+            class="absolute left-1/2 transform -translate-x-1/2 bg-stone-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-6 z-30 transition-all duration-300 translate-y-40 opacity-0 border border-stone-700 max-w-[90%] w-auto whitespace-nowrap">
             <span class="text-sm font-medium font-sans"><span id="selectedCount"
-                    class="font-bold text-blue-400">0</span> selected</span>
+                    class="font-bold text-blue-400">0</span> <span class="hidden md:inline">selected</span></span>
             <div class="h-5 w-px bg-stone-700"></div>
-            <button id="btnBookmark"
-                class="hover:text-amber-400 transition-colors tooltip flex flex-col items-center group"
+            <button id="btnBookmark" class="p-2 active:text-amber-400 transition-colors flex flex-col items-center"
                 title="Set Bookmark">
-                <i class="fas fa-bookmark text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                <i class="fas fa-bookmark text-lg"></i>
             </button>
-            <button id="btnCollection"
-                class="hover:text-blue-400 transition-colors tooltip flex flex-col items-center group"
+            <button id="btnCollection" class="p-2 active:text-blue-400 transition-colors flex flex-col items-center"
                 title="Add to Collection">
-                <i class="fas fa-folder-plus text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                <i class="fas fa-folder-plus text-lg"></i>
             </button>
-            <button id="btnClearSelection" class="hover:text-red-400 transition-colors flex flex-col items-center group"
+            <button id="btnClearSelection" class="p-2 active:text-red-400 transition-colors flex flex-col items-center"
                 title="Clear">
-                <i class="fas fa-times text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                <i class="fas fa-times text-lg"></i>
             </button>
         </div>
     </main>
 
     <!-- Collection Modal -->
     <div id="collectionModal"
-        class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden items-center justify-center">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-100">
+        class="fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100 max-h-[80vh] flex flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-stone-800 font-serif">Add to Collection</h3>
-                <button id="closeModal" class="text-stone-400 hover:text-stone-600"><i
-                        class="fas fa-times"></i></button>
+                <button id="closeModal" class="text-stone-400 p-2 rounded-full hover:bg-stone-100"><i
+                        class="fas fa-times text-lg"></i></button>
             </div>
             <div class="mb-6">
                 <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">New
                     Collection</label>
                 <div class="flex shadow-sm">
                     <input type="text" id="newCollectionName"
-                        class="flex-1 border border-stone-300 rounded-l-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                        class="flex-1 border border-stone-300 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
                         placeholder="e.g., Prophecies...">
                     <button id="createCollectionBtn"
-                        class="bg-blue-600 text-white px-5 py-2.5 rounded-r-lg hover:bg-blue-700 font-medium transition-colors">Create</button>
+                        class="bg-blue-600 text-white px-5 py-2 rounded-r-lg active:bg-blue-700 font-medium transition-colors">Create</button>
                 </div>
             </div>
-            <div class="mb-2">
+            <div class="flex-1 overflow-hidden flex flex-col">
                 <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Or Select
                     Existing</label>
                 <div id="modalCollectionList"
-                    class="border border-stone-200 rounded-lg max-h-48 overflow-y-auto bg-stone-50"></div>
+                    class="border border-stone-200 rounded-lg overflow-y-auto bg-stone-50 flex-1"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Structure ---
+        // --- Structure (Kept for Indexing) ---
         const BIBLE_STRUCTURE = {
             "Genesis": 50, "Exodus": 40, "Leviticus": 27, "Numbers": 36, "Deuteronomy": 34,
             "Joshua": 24, "Judges": 21, "Ruth": 4,
@@ -445,7 +501,7 @@
                 bibleData = await response.json();
             } catch (e) {
                 console.error("Data load failed:", e);
-                // Simple Fallback to prevent crash if file missing
+                // Fail silently or handle strictly, no placeholders generated
                 bibleData = {};
             }
 
@@ -471,6 +527,7 @@
             document.getElementById('currentBookTitle').textContent = book;
             document.getElementById('currentChapterDisplay').textContent = chapter;
 
+            // Sidebar Active State
             document.querySelectorAll('.chapter-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`.chapter-btn[data-book="${book}"][data-chapter="${chapter}"]`);
             if (activeBtn) {
@@ -482,9 +539,8 @@
             updateReadButtonState();
             renderVerses();
 
-            if (window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('-translate-x-full');
-            }
+            // Auto-Close Sidebar on Mobile
+            closeMobileSidebar();
         }
 
         function renderVerses() {
@@ -494,11 +550,11 @@
             const isParallel = state.viewMode === 'parallel';
 
             if (isParallel) {
-                contentDiv.className = "parallel-grid min-h-[50vh]";
+                contentDiv.className = "parallel-grid min-h-[50vh] pb-[env(safe-area-inset-bottom)]";
                 headers.classList.remove('hidden');
                 headers.classList.add('grid');
             } else {
-                contentDiv.className = "max-w-3xl mx-auto bible-text min-h-[50vh] pt-4";
+                contentDiv.className = "max-w-3xl mx-auto bible-text min-h-[50vh] pt-2 pb-[env(safe-area-inset-bottom)]";
                 headers.classList.add('hidden');
                 headers.classList.remove('grid');
             }
@@ -506,16 +562,18 @@
             contentDiv.innerHTML = '';
             footer.classList.remove('hidden');
 
+            // Strict Data Access
             const bookData = bibleData[state.book];
             const chapterData = bookData ? bookData[state.chapter] : null;
 
-            if (!chapterData) {
+            if (!chapterData || chapterData.length === 0) {
                 contentDiv.innerHTML = `
                     <div class="col-span-full flex flex-col items-center justify-center h-64 text-center p-8">
-                        <i class="fas fa-scroll text-4xl text-stone-300 mb-4"></i>
-                        <h3 class="text-lg font-bold text-stone-600 mb-2">Text Not Available</h3>
-                        <p class="text-stone-500 text-sm">Text for ${state.book} ${state.chapter} is missing from source.</p>
+                        <i class="fas fa-feather-alt text-4xl text-stone-300 mb-4"></i>
+                        <h3 class="text-lg font-bold text-stone-600 mb-2">Text Coming Soon</h3>
+                        <p class="text-stone-500 text-sm">Content for ${state.book} ${state.chapter} has not been added yet.</p>
                     </div>`;
+                footer.classList.add('hidden'); // Hide read button if no text
                 return;
             }
 
@@ -524,15 +582,15 @@
                 const refId = `${state.book}|${state.chapter}|${v.verse}`;
 
                 if (isParallel) {
-                    // Block Layout for Parallel
+                    // Block Layout for Parallel (Mobile Stacked, Desktop Grid)
                     const versions = ['LES', 'NASB', 'CSB'];
                     versions.forEach(ver => {
                         const el = document.createElement('div');
                         el.className = `verse-block rounded shadow-sm border border-stone-100 ${isBookmarked && ver === 'LES' ? 'bookmarked' : ''}`;
                         el.dataset.ref = refId;
                         el.dataset.ver = ver;
-                        el.dataset.text = v.text[ver] || "";
                         el.innerHTML = `
+                            <div class="text-xs font-bold text-stone-400 mb-1 uppercase tracking-wider md:hidden">${ver}</div>
                             <span class="verse-num-block">${v.verse}</span>
                             <span class="text-base text-stone-800 leading-relaxed">${v.text[ver] || "—"}</span>
                         `;
@@ -545,7 +603,6 @@
                     el.className = `verse-inline ${isBookmarked ? 'bookmarked' : ''}`;
                     el.dataset.ref = refId;
                     el.dataset.ver = 'LES';
-                    el.dataset.text = v.text.LES || "";
                     el.innerHTML = `<sup class="verse-num-inline">${v.verse}</sup>${v.text.LES || ""} `;
                     el.onclick = (e) => toggleSelection(e, refId);
                     contentDiv.appendChild(el);
@@ -567,12 +624,11 @@
         // --- Logic: Bookmarks, Navigation & Progress ---
 
         window.deleteBookmark = function (e) {
-            e.stopPropagation(); // Prevents "Resume" click
+            e.stopPropagation();
             if (confirm("Remove current bookmark?")) {
                 state.bookmarks = null;
                 localStorage.removeItem('bible_bookmark');
                 renderResumeButton();
-                // Remove visual styling
                 document.querySelectorAll('.bookmarked').forEach(el => el.classList.remove('bookmarked'));
             }
         }
@@ -580,7 +636,6 @@
         window.jumpToVerse = function (refString) {
             const [b, c, v] = refString.split('|');
 
-            // Helper to scroll reader specifically (preventing page scroll)
             const performScroll = () => {
                 const el = document.querySelector(`[data-ref="${refString}"]`);
                 if (el) {
@@ -592,9 +647,10 @@
 
             if (state.book === b && state.chapter === parseInt(c)) {
                 performScroll();
+                closeMobileSidebar();
             } else {
                 loadChapter(b, parseInt(c)).then(() => {
-                    setTimeout(performScroll, 150);
+                    setTimeout(performScroll, 200);
                 });
             }
         };
@@ -610,7 +666,6 @@
             updateReadButtonState();
             updateProgress();
 
-            // Update sidebar visual
             const btn = document.querySelector(`.chapter-btn[data-book="${state.book}"][data-chapter="${state.chapter}"]`);
             if (btn) btn.classList.toggle('read');
         }
@@ -641,14 +696,10 @@
         }
 
         function updateProgress() {
-            // Calculate Total Chapters in Bible
             let totalChapters = 0;
             Object.values(BIBLE_STRUCTURE).forEach(c => totalChapters += c);
 
-            // Count valid read chapters
             let readCount = state.readChapters.length;
-
-            // Update Circle
             const percent = totalChapters > 0 ? Math.round((readCount / totalChapters) * 100) : 0;
             const circle = document.getElementById('progressCircle');
             const circumference = circle.r.baseVal.value * 2 * Math.PI;
@@ -663,7 +714,6 @@
         // --- Interaction Helpers ---
 
         function toggleSelection(e, refId) {
-            // If dragging text, don't trigger selection
             if (window.getSelection().toString().length > 0) return;
 
             const els = document.querySelectorAll(`[data-ref="${refId}"]`);
@@ -687,7 +737,7 @@
             const bar = document.getElementById('actionBar');
             const count = state.selectedVerses.size;
             document.getElementById('selectedCount').textContent = count;
-            count > 0 ? bar.classList.remove('translate-y-32', 'opacity-0') : bar.classList.add('translate-y-32', 'opacity-0');
+            count > 0 ? bar.classList.remove('translate-y-40', 'opacity-0') : bar.classList.add('translate-y-40', 'opacity-0');
         }
 
         function saveBookmark() {
@@ -697,9 +747,8 @@
             state.bookmarks = { book: b, chapter: parseInt(c), verse: parseInt(v) };
             localStorage.setItem('bible_bookmark', JSON.stringify(state.bookmarks));
             renderResumeButton();
-            // Update styling without reload
             document.querySelectorAll('.bookmarked').forEach(el => el.classList.remove('bookmarked'));
-            // Styling depends on viewMode
+
             const selector = state.viewMode === 'parallel' ? `[data-ref="${ref}"][data-ver="LES"]` : `[data-ref="${ref}"]`;
             const el = document.querySelector(selector);
             if (el) el.classList.add('bookmarked');
@@ -728,7 +777,7 @@
                 const details = document.createElement('details');
                 details.className = "group mb-1";
                 const summary = document.createElement('summary');
-                summary.className = "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-stone-100 text-stone-700 font-medium transition-colors list-none";
+                summary.className = "flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-stone-100 text-stone-700 font-medium transition-colors list-none select-none";
                 summary.innerHTML = `<span>${book}</span><i class="fas fa-chevron-down text-xs text-stone-400 transform group-open:rotate-180 transition-transform"></i>`;
 
                 const grid = document.createElement('div');
@@ -763,14 +812,14 @@
             keys.forEach(name => {
                 if (filter && !name.toLowerCase().includes(filter.toLowerCase())) return;
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-lg border border-stone-200 shadow-sm overflow-hidden group";
+                card.className = "bg-white rounded-lg border border-stone-200 shadow-sm overflow-hidden group mb-4";
                 const header = document.createElement('div');
                 header.className = "p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center";
                 header.innerHTML = `<span class="font-bold text-stone-700 text-sm truncate">${name}</span>`;
                 const delBtn = document.createElement('button');
-                delBtn.className = "text-stone-400 hover:text-red-500 w-6 h-6 flex items-center justify-center rounded hover:bg-red-50";
+                delBtn.className = "text-stone-400 hover:text-red-500 w-8 h-8 flex items-center justify-center rounded hover:bg-red-50";
                 delBtn.onclick = (e) => { e.stopPropagation(); window.deleteCollection(name); };
-                delBtn.innerHTML = '<i class="fas fa-trash-alt text-xs"></i>';
+                delBtn.innerHTML = '<i class="fas fa-trash-alt text-sm"></i>';
                 header.appendChild(delBtn);
                 card.appendChild(header);
 
@@ -778,7 +827,7 @@
                 content.className = "flex flex-col";
                 state.collections[name].forEach(item => {
                     const row = document.createElement('div');
-                    row.className = "p-3 text-sm border-b border-stone-50 last:border-0 hover:bg-blue-50 cursor-pointer transition-colors";
+                    row.className = "p-3 text-sm border-b border-stone-50 last:border-0 active:bg-blue-50 cursor-pointer transition-colors";
                     row.innerHTML = `
                         <div class="font-bold text-blue-600 text-xs mb-1">${item.displayRef}</div>
                         <div class="text-stone-600 text-xs font-serif leading-relaxed line-clamp-3">${item.text}</div>
@@ -804,13 +853,13 @@
             state.selectedVerses.forEach(refId => {
                 const [b, c, v] = refId.split('|');
                 const el = document.querySelector(`[data-ref="${refId}"]`);
-                const text = el ? el.dataset.text : "";
+                const text = el ? (el.dataset.text || el.textContent) : ""; // Fallback for safety
                 const exists = state.collections[collectionName].find(item => item.ref === refId);
                 if (!exists) {
                     state.collections[collectionName].push({
                         ref: refId,
                         displayRef: `${b} ${c}:${v}`,
-                        text: text,
+                        text: text.trim(),
                         version: 'LES',
                         timestamp: Date.now()
                     });
@@ -823,9 +872,23 @@
             clearSelection();
         }
 
+        // --- Mobile Sidebar Helpers ---
+        function closeMobileSidebar() {
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebarOverlay').classList.remove('open');
+            }
+        }
+
+        function openMobileSidebar() {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('open');
+        }
+
         // --- Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
+
             document.getElementById('viewToggle').onclick = () => {
                 state.viewMode = state.viewMode === 'single' ? 'parallel' : 'single';
                 document.getElementById('viewLabel').textContent = state.viewMode === 'single' ? 'Parallel' : 'Single';
@@ -833,8 +896,12 @@
             };
             document.getElementById('prevChapter').onclick = () => { if (state.chapter > 1) loadChapter(state.book, state.chapter - 1); };
             document.getElementById('nextChapter').onclick = () => { if (state.chapter < (BIBLE_STRUCTURE[state.book] || 50)) loadChapter(state.book, state.chapter + 1); };
-            document.getElementById('openSidebar').onclick = () => document.getElementById('sidebar').classList.remove('-translate-x-full');
-            document.getElementById('closeSidebar').onclick = () => document.getElementById('sidebar').classList.add('-translate-x-full');
+
+            // Mobile Sidebar Interactions
+            document.getElementById('openSidebar').onclick = openMobileSidebar;
+            document.getElementById('closeSidebar').onclick = closeMobileSidebar;
+            document.getElementById('sidebarOverlay').onclick = closeMobileSidebar;
+
             document.getElementById('tabBooks').onclick = () => {
                 document.getElementById('booksList').classList.remove('hidden'); document.getElementById('collectionsPanel').classList.add('hidden');
                 document.getElementById('tabBooks').classList.add('text-blue-700', 'border-blue-600'); document.getElementById('tabBooks').classList.remove('text-stone-500');
@@ -845,7 +912,9 @@
                 document.getElementById('tabCollections').classList.add('text-blue-700', 'border-blue-600'); document.getElementById('tabCollections').classList.remove('text-stone-500');
                 document.getElementById('tabBooks').classList.remove('text-blue-700', 'border-blue-600'); document.getElementById('tabBooks').classList.add('text-stone-500');
             };
-            document.getElementById('resumeBtn').onclick = () => { if (state.bookmarks) loadChapter(state.bookmarks.book, state.bookmarks.chapter); };
+            document.getElementById('resumeBtn').onclick = () => {
+                if (state.bookmarks) loadChapter(state.bookmarks.book, state.bookmarks.chapter);
+            };
             document.getElementById('clearBookmarkBtn').onclick = deleteBookmark;
             document.getElementById('btnClearSelection').onclick = clearSelection;
             document.getElementById('btnBookmark').onclick = saveBookmark;
