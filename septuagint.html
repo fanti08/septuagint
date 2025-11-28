@@ -10,37 +10,36 @@
     <meta name="theme-color" content="#fcfaf8">
     <title>Septuagint Parallel Reader</title>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Mobile Safe Area Handling */
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
         }
 
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #fcfaf8;
-            height: 100vh;
-            /* Fallback */
+            height: 100%;
             height: 100dvh;
-            /* Dynamic viewport height for mobile browsers */
+            overflow: hidden;
         }
 
-        /* Typography for Reading */
         .bible-text {
             font-family: 'Crimson Pro', serif;
             line-height: 1.6;
-            font-size: 1.25rem;
-            /* Slightly smaller on mobile default, scalable */
+            font-size: 1.3rem;
             color: #1c1917;
             text-align: justify;
             -webkit-text-size-adjust: 100%;
@@ -48,11 +47,11 @@
 
         @media (min-width: 768px) {
             .bible-text {
-                font-size: 1.35rem;
+                font-size: 1.4rem;
+                line-height: 1.7;
             }
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -71,14 +70,17 @@
             background: #a8a29e;
         }
 
-        /* --- Verse Styling: Inline Mode (Single View) --- */
+        .scroll-container {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
+        /* Inline Verse (Single View) */
         .verse-inline {
             display: inline;
             position: relative;
             padding: 4px 0;
-            /* Increase tap area slightly */
             cursor: pointer;
-            /* Change to pointer to indicate interactivity */
             transition: background-color 0.2s;
             border-radius: 4px;
             box-decoration-break: clone;
@@ -101,24 +103,27 @@
 
         .verse-num-inline {
             font-family: 'Inter', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #a8a29e;
             user-select: none;
             vertical-align: super;
-            margin-right: 2px;
-            margin-left: 2px;
+            margin-right: 3px;
+            margin-left: 3px;
         }
 
-        /* --- Verse Styling: Block Mode (Parallel View) --- */
+        /* Block Verse (Parallel View) */
         .verse-block {
             position: relative;
-            padding: 12px;
-            margin-bottom: 8px;
+            padding: 10px;
+            /* Reduced padding */
+            margin-bottom: 0;
+            /* Remove margin, handled by grid gap */
             border-left: 3px solid transparent;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            line-height: 1.6;
         }
 
         .verse-block.selected {
@@ -133,7 +138,7 @@
 
         .verse-num-block {
             font-family: 'Inter', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #a8a29e;
             margin-right: 0.5rem;
@@ -154,34 +159,35 @@
             }
         }
 
-        /* Parallel Grid - Stacks vertically on mobile */
+        /* Parallel Layout Config */
         .parallel-grid {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
+            /* Reduced gap on mobile */
         }
 
         @media (min-width: 1024px) {
             .parallel-grid {
                 display: grid;
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: 1fr 1fr;
+                /* Explicit two column */
                 gap: 2rem;
+                /* Tighter gap */
+                max-width: 100%;
             }
         }
 
-        /* Sidebar & Collections */
         .chapter-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
-            /* Bigger gap for touch */
             padding: 12px;
         }
 
         .chapter-btn {
             text-align: center;
             padding: 8px 0;
-            /* Taller touch target */
             border-radius: 6px;
             font-size: 0.9rem;
             color: #57534e;
@@ -194,7 +200,6 @@
             background-color: #e7e5e4;
         }
 
-        /* Mobile tap state */
         .chapter-btn.active {
             background-color: #2563eb;
             color: white;
@@ -214,19 +219,16 @@
             border-color: #15803d;
         }
 
-        /* Progress Bar */
         .progress-ring-circle {
             transition: stroke-dashoffset 0.35s;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
 
-        /* Floating Action Bar - Mobile Safe Area */
         #actionBar {
             bottom: calc(2rem + var(--safe-bottom));
         }
 
-        /* Mobile Sidebar Overlay */
         .sidebar-overlay {
             position: fixed;
             inset: 0;
@@ -241,19 +243,46 @@
             opacity: 1;
             pointer-events: auto;
         }
+
+        /* --- Cinematic Share Card --- */
+        .cinematic-card {
+            background: linear-gradient(145deg, #1c1917 0%, #292524 100%);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid #44403c;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cinematic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        .cinematic-text {
+            font-family: 'Crimson Pro', serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .cinematic-ref {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+            color: #d6d3d1;
+        }
     </style>
 </head>
 
 <body class="h-full flex overflow-hidden selection:bg-blue-100 selection:text-blue-900">
 
-    <!-- Mobile Sidebar Backdrop -->
     <div id="sidebarOverlay" class="sidebar-overlay md:hidden"></div>
 
-    <!-- Left Sidebar -->
     <aside
         class="w-full md:w-80 bg-white border-r border-stone-200 flex flex-col flex-shrink-0 z-30 fixed md:relative h-full transition-transform transform -translate-x-full md:translate-x-0 shadow-2xl md:shadow-none pt-[env(safe-area-inset-top)]"
         id="sidebar">
-        <!-- Sidebar Header -->
         <div class="p-4 border-b border-stone-100 bg-white flex-shrink-0">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="font-bold text-xl text-stone-800 tracking-tight flex items-center">
@@ -265,7 +294,6 @@
                         class="fas fa-times text-xl"></i></button>
             </div>
 
-            <!-- Progress Section -->
             <div class="bg-stone-50 rounded-lg p-3 flex items-center shadow-sm border border-stone-100">
                 <div class="relative w-12 h-12 mr-3 flex-shrink-0">
                     <svg class="w-12 h-12" viewBox="0 0 100 100">
@@ -288,7 +316,6 @@
             </div>
         </div>
 
-        <!-- Resume Button -->
         <div id="resumeContainer" class="hidden p-2 border-b border-stone-100 bg-amber-50 flex-shrink-0">
             <div class="flex items-center w-full gap-2">
                 <button id="resumeBtn"
@@ -305,19 +332,14 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
         <div class="flex border-b border-stone-200 text-sm font-medium bg-stone-50 flex-shrink-0">
             <button class="flex-1 py-4 text-blue-700 border-b-2 border-blue-600 bg-white" id="tabBooks">Books</button>
             <button class="flex-1 py-4 text-stone-500 hover:text-stone-700 hover:bg-white transition-colors"
                 id="tabCollections">Collections</button>
         </div>
 
-        <!-- Books Index -->
-        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1 pb-20 md:pb-2">
-            <!-- Books injected by JS -->
-        </div>
+        <div id="booksList" class="flex-1 overflow-y-auto p-2 space-y-1 pb-20 md:pb-2 scroll-container"></div>
 
-        <!-- Collections Panel -->
         <div id="collectionsPanel" class="hidden flex-1 flex flex-col overflow-hidden h-full bg-stone-50">
             <div class="p-3 border-b border-stone-200 bg-white sticky top-0 z-10">
                 <div class="relative">
@@ -326,15 +348,11 @@
                         class="w-full pl-10 pr-3 py-2.5 text-sm border border-stone-200 rounded-lg bg-stone-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 </div>
             </div>
-            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4 pb-20 md:pb-4">
-                <!-- Collections injected by JS -->
-            </div>
+            <div id="collectionsList" class="flex-1 overflow-y-auto p-3 space-y-4 pb-20 md:pb-4 scroll-container"></div>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="flex-1 flex flex-col w-full relative h-full bg-[#fcfaf8] pt-[env(safe-area-inset-top)]">
-        <!-- Top Header -->
         <header
             class="h-16 bg-white/95 backdrop-blur border-b border-stone-200 flex items-center justify-between px-4 shadow-sm z-20 flex-shrink-0 sticky top-0">
             <div class="flex items-center space-x-3 overflow-hidden">
@@ -366,19 +384,16 @@
             </div>
         </header>
 
-        <!-- Reader Area -->
-        <div id="readerContainer" class="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-10 scroll-smooth relative">
+        <div id="readerContainer"
+            class="flex-1 overflow-y-auto px-4 py-4 md:px-12 md:py-10 scroll-smooth relative scroll-container">
 
-            <!-- Parallel Headers -->
+            <!-- Parallel Headers: Matched Gap to Grid -->
             <div id="parallelHeaders"
-                class="hidden grid-cols-1 md:grid-cols-3 gap-2 md:gap-8 mb-4 pb-2 border-b border-stone-200 sticky top-0 bg-[#fcfaf8]/95 backdrop-blur z-10 pt-2 text-center md:text-left">
-                <!-- Headers hidden on mobile for cleaner vertical stack, shown on desktop -->
+                class="hidden grid-cols-1 md:grid-cols-2 gap-2 md:gap-8 mb-4 pb-2 border-b border-stone-200 sticky top-0 bg-[#fcfaf8]/95 backdrop-blur z-10 pt-2 text-center md:text-left">
                 <div class="hidden md:block font-bold text-stone-600 text-sm">LES</div>
                 <div class="hidden md:block font-bold text-stone-600 text-sm">NASB</div>
-                <div class="hidden md:block font-bold text-stone-600 text-sm">CSB</div>
             </div>
 
-            <!-- Content -->
             <div id="readerContent" class="max-w-3xl mx-auto bible-text min-h-[50vh] pb-[env(safe-area-inset-bottom)]">
                 <div class="flex flex-col items-center justify-center h-64 text-stone-400">
                     <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-blue-500"></i>
@@ -386,7 +401,6 @@
                 </div>
             </div>
 
-            <!-- Chapter Complete Button -->
             <div id="chapterFooter"
                 class="max-w-3xl mx-auto mt-8 mb-32 pt-6 border-t border-stone-200 flex justify-center hidden">
                 <button id="markReadBtn"
@@ -401,26 +415,59 @@
             </div>
         </div>
 
-        <!-- Floating Action Bar -->
         <div id="actionBar"
-            class="absolute left-1/2 transform -translate-x-1/2 bg-stone-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-6 z-30 transition-all duration-300 translate-y-40 opacity-0 border border-stone-700 max-w-[90%] w-auto whitespace-nowrap">
+            class="absolute left-1/2 transform -translate-x-1/2 bg-stone-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center space-x-5 z-30 transition-all duration-300 translate-y-40 opacity-0 border border-stone-700 max-w-[95%] w-auto whitespace-nowrap">
             <span class="text-sm font-medium font-sans"><span id="selectedCount"
                     class="font-bold text-blue-400">0</span> <span class="hidden md:inline">selected</span></span>
             <div class="h-5 w-px bg-stone-700"></div>
-            <button id="btnBookmark" class="p-2 active:text-amber-400 transition-colors flex flex-col items-center"
+            <button id="btnBookmark" class="p-1 active:text-amber-400 transition-colors flex flex-col items-center"
                 title="Set Bookmark">
                 <i class="fas fa-bookmark text-lg"></i>
             </button>
-            <button id="btnCollection" class="p-2 active:text-blue-400 transition-colors flex flex-col items-center"
+            <button id="btnShare" class="p-1 active:text-purple-400 transition-colors flex flex-col items-center"
+                title="Share Quote">
+                <i class="fas fa-share-alt text-lg"></i>
+            </button>
+            <button id="btnCollection" class="p-1 active:text-blue-400 transition-colors flex flex-col items-center"
                 title="Add to Collection">
                 <i class="fas fa-folder-plus text-lg"></i>
             </button>
-            <button id="btnClearSelection" class="p-2 active:text-red-400 transition-colors flex flex-col items-center"
+            <button id="btnClearSelection" class="p-1 active:text-red-400 transition-colors flex flex-col items-center"
                 title="Clear">
                 <i class="fas fa-times text-lg"></i>
             </button>
         </div>
     </main>
+
+    <!-- Share Modal -->
+    <div id="shareModal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] hidden items-center justify-center p-4">
+        <div class="w-full max-w-lg flex flex-col">
+            <div class="flex justify-end mb-2">
+                <button id="closeShareModal" class="text-white/70 hover:text-white p-2"><i
+                        class="fas fa-times text-xl"></i></button>
+            </div>
+
+            <!-- Screenshottable Area -->
+            <div id="shareCard"
+                class="cinematic-card rounded-lg p-8 md:p-12 text-center flex flex-col justify-center min-h-[300px]">
+                <div class="flex-grow flex items-center justify-center">
+                    <p id="shareText"
+                        class="cinematic-text text-xl md:text-2xl text-stone-100 leading-relaxed font-serif italic"></p>
+                </div>
+                <div class="mt-8 text-right border-t border-white/20 pt-4">
+                    <span id="shareRef"
+                        class="cinematic-ref text-sm md:text-base font-bold text-amber-500 block"></span>
+                    <span class="text-[10px] text-stone-500 uppercase tracking-widest mt-1 block">Septuagint
+                        Reader</span>
+                </div>
+            </div>
+
+            <div class="mt-4 text-center text-white/50 text-sm">
+                Take a screenshot to share
+            </div>
+        </div>
+    </div>
 
     <!-- Collection Modal -->
     <div id="collectionModal"
@@ -447,13 +494,13 @@
                 <label class="block text-xs font-bold text-stone-500 uppercase tracking-wide mb-2">Or Select
                     Existing</label>
                 <div id="modalCollectionList"
-                    class="border border-stone-200 rounded-lg overflow-y-auto bg-stone-50 flex-1"></div>
+                    class="border border-stone-200 rounded-lg overflow-y-auto bg-stone-50 flex-1 scroll-container">
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Structure (Kept for Indexing) ---
         const BIBLE_STRUCTURE = {
             "Genesis": 50, "Exodus": 40, "Leviticus": 27, "Numbers": 36, "Deuteronomy": 34,
             "Joshua": 24, "Judges": 21, "Ruth": 4,
@@ -469,7 +516,6 @@
             "Ezekiel": 48, "Daniel": 12
         };
 
-        // --- State ---
         let bibleData = null;
         let state = {
             book: "Genesis",
@@ -481,10 +527,7 @@
             readChapters: []
         };
 
-        // --- Core Functions ---
-
         async function initApp() {
-            // Load LocalStorage
             const storedBookmark = localStorage.getItem('bible_bookmark');
             if (storedBookmark) state.bookmarks = JSON.parse(storedBookmark);
 
@@ -494,24 +537,20 @@
             const storedRead = localStorage.getItem('bible_read_chapters');
             if (storedRead) state.readChapters = JSON.parse(storedRead);
 
-            // Fetch JSON
             try {
                 const response = await fetch('bible_data.json');
                 if (!response.ok) throw new Error("Could not load data");
                 bibleData = await response.json();
             } catch (e) {
                 console.error("Data load failed:", e);
-                // Fail silently or handle strictly, no placeholders generated
                 bibleData = {};
             }
 
-            // Render UI
             updateProgress();
             renderBookIndex();
             renderResumeButton();
             renderCollectionsList();
 
-            // Initial Load
             if (state.bookmarks) {
                 loadChapter(state.bookmarks.book, state.bookmarks.chapter);
             } else {
@@ -523,11 +562,9 @@
             state.book = book;
             state.chapter = chapter;
 
-            // UI Updates
             document.getElementById('currentBookTitle').textContent = book;
             document.getElementById('currentChapterDisplay').textContent = chapter;
 
-            // Sidebar Active State
             document.querySelectorAll('.chapter-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`.chapter-btn[data-book="${book}"][data-chapter="${chapter}"]`);
             if (activeBtn) {
@@ -538,8 +575,6 @@
 
             updateReadButtonState();
             renderVerses();
-
-            // Auto-Close Sidebar on Mobile
             closeMobileSidebar();
         }
 
@@ -550,19 +585,20 @@
             const isParallel = state.viewMode === 'parallel';
 
             if (isParallel) {
-                contentDiv.className = "parallel-grid min-h-[50vh] pb-[env(safe-area-inset-bottom)]";
+                // FIXED: Bible Text font applied here too
+                contentDiv.className = "parallel-grid min-h-[50vh] pb-[env(safe-area-inset-bottom)] bible-text";
+
                 headers.classList.remove('hidden');
-                headers.classList.add('grid');
+                headers.classList.add('hidden', 'md:grid');
             } else {
                 contentDiv.className = "max-w-3xl mx-auto bible-text min-h-[50vh] pt-2 pb-[env(safe-area-inset-bottom)]";
                 headers.classList.add('hidden');
-                headers.classList.remove('grid');
+                headers.classList.remove('md:grid');
             }
 
             contentDiv.innerHTML = '';
             footer.classList.remove('hidden');
 
-            // Strict Data Access
             const bookData = bibleData[state.book];
             const chapterData = bookData ? bookData[state.chapter] : null;
 
@@ -573,7 +609,7 @@
                         <h3 class="text-lg font-bold text-stone-600 mb-2">Text Coming Soon</h3>
                         <p class="text-stone-500 text-sm">Content for ${state.book} ${state.chapter} has not been added yet.</p>
                     </div>`;
-                footer.classList.add('hidden'); // Hide read button if no text
+                footer.classList.add('hidden');
                 return;
             }
 
@@ -582,8 +618,7 @@
                 const refId = `${state.book}|${state.chapter}|${v.verse}`;
 
                 if (isParallel) {
-                    // Block Layout for Parallel (Mobile Stacked, Desktop Grid)
-                    const versions = ['LES', 'NASB', 'CSB'];
+                    const versions = ['LES', 'NASB'];
                     versions.forEach(ver => {
                         const el = document.createElement('div');
                         el.className = `verse-block rounded shadow-sm border border-stone-100 ${isBookmarked && ver === 'LES' ? 'bookmarked' : ''}`;
@@ -598,7 +633,6 @@
                         contentDiv.appendChild(el);
                     });
                 } else {
-                    // Inline Layout for Single
                     const el = document.createElement('span');
                     el.className = `verse-inline ${isBookmarked ? 'bookmarked' : ''}`;
                     el.dataset.ref = refId;
@@ -609,7 +643,6 @@
                 }
             });
 
-            // Scroll to bookmark
             if (state.bookmarks && state.bookmarks.book === state.book && state.bookmarks.chapter === state.chapter) {
                 setTimeout(() => {
                     const selector = `[data-ref="${state.book}|${state.chapter}|${state.bookmarks.verse}"]`;
@@ -620,8 +653,6 @@
                 }, 100);
             }
         }
-
-        // --- Logic: Bookmarks, Navigation & Progress ---
 
         window.deleteBookmark = function (e) {
             e.stopPropagation();
@@ -711,8 +742,6 @@
             document.getElementById('totalChaptersCount').textContent = totalChapters;
         }
 
-        // --- Interaction Helpers ---
-
         function toggleSelection(e, refId) {
             if (window.getSelection().toString().length > 0) return;
 
@@ -798,8 +827,6 @@
             }
         }
 
-        // --- Collections ---
-
         function renderCollectionsList(filter = '') {
             const container = document.getElementById('collectionsList');
             container.innerHTML = '';
@@ -853,7 +880,7 @@
             state.selectedVerses.forEach(refId => {
                 const [b, c, v] = refId.split('|');
                 const el = document.querySelector(`[data-ref="${refId}"]`);
-                const text = el ? (el.dataset.text || el.textContent) : ""; // Fallback for safety
+                const text = el ? (el.dataset.text || el.textContent) : "";
                 const exists = state.collections[collectionName].find(item => item.ref === refId);
                 if (!exists) {
                     state.collections[collectionName].push({
@@ -872,7 +899,61 @@
             clearSelection();
         }
 
-        // --- Mobile Sidebar Helpers ---
+        // --- Share Logic ---
+        function generateShareCard() {
+            const selectedArray = Array.from(state.selectedVerses).map(ref => {
+                const [b, c, v] = ref.split('|');
+                return { ref, b, c, v: parseInt(v) };
+            }).sort((a, b) => a.v - b.v);
+
+            if (selectedArray.length === 0) return;
+
+            // Gather text. Priority: Currently displayed text
+            let fullText = "";
+            let refText = "";
+
+            selectedArray.forEach((item, index) => {
+                // Determine selector based on view mode. In parallel, grabbing LES usually is safer for Septuagint reader
+                const selector = state.viewMode === 'parallel'
+                    ? `[data-ref="${item.ref}"][data-ver="LES"]`
+                    : `[data-ref="${item.ref}"]`;
+
+                const el = document.querySelector(selector) || document.querySelector(`[data-ref="${item.ref}"]`); // fallback
+                if (el) {
+                    let text = "";
+                    // Clean text (remove verse numbers if contained in textContent directly)
+                    if (state.viewMode === 'single') {
+                        // In single mode, text is inside, verse num is sup.
+                        const clone = el.cloneNode(true);
+                        const sup = clone.querySelector('sup');
+                        if (sup) sup.remove();
+                        text = clone.textContent.trim();
+                    } else {
+                        // In block mode, text is in span
+                        text = el.querySelector('span.text-base')?.textContent || el.textContent;
+                    }
+                    fullText += text.trim() + " ";
+                }
+            });
+
+            // Construct Reference
+            if (selectedArray.length > 0) {
+                const first = selectedArray[0];
+                const last = selectedArray[selectedArray.length - 1];
+                if (first.v === last.v) {
+                    refText = `${first.b} ${first.c}:${first.v}`;
+                } else {
+                    refText = `${first.b} ${first.c}:${first.v}-${last.v}`;
+                }
+            }
+
+            document.getElementById('shareText').textContent = fullText;
+            document.getElementById('shareRef').textContent = refText;
+
+            document.getElementById('shareModal').classList.remove('hidden');
+            document.getElementById('shareModal').classList.add('flex');
+        }
+
         function closeMobileSidebar() {
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -885,7 +966,6 @@
             document.getElementById('sidebarOverlay').classList.add('open');
         }
 
-        // --- Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
 
@@ -897,7 +977,6 @@
             document.getElementById('prevChapter').onclick = () => { if (state.chapter > 1) loadChapter(state.book, state.chapter - 1); };
             document.getElementById('nextChapter').onclick = () => { if (state.chapter < (BIBLE_STRUCTURE[state.book] || 50)) loadChapter(state.book, state.chapter + 1); };
 
-            // Mobile Sidebar Interactions
             document.getElementById('openSidebar').onclick = openMobileSidebar;
             document.getElementById('closeSidebar').onclick = closeMobileSidebar;
             document.getElementById('sidebarOverlay').onclick = closeMobileSidebar;
@@ -928,6 +1007,14 @@
                     div.onclick = () => addToCollection(name); list.appendChild(div);
                 });
             };
+
+            // Share Handlers
+            document.getElementById('btnShare').onclick = generateShareCard;
+            document.getElementById('closeShareModal').onclick = () => {
+                document.getElementById('shareModal').classList.remove('flex');
+                document.getElementById('shareModal').classList.add('hidden');
+            };
+
             document.getElementById('createCollectionBtn').onclick = () => { const n = document.getElementById('newCollectionName').value.trim(); if (n) addToCollection(n); };
             document.getElementById('closeModal').onclick = () => { document.getElementById('collectionModal').classList.remove('flex'); document.getElementById('collectionModal').classList.add('hidden'); };
             document.getElementById('collectionSearch').addEventListener('input', (e) => renderCollectionsList(e.target.value));
