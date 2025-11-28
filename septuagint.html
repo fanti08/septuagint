@@ -89,11 +89,33 @@
             overscroll-behavior-y: contain;
         }
 
+        /* --- Subtitle Styling --- */
+        .chapter-subtitle {
+            font-family: 'Cinzel', serif;
+            color: #c2410c;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 1.5rem 0 0.5rem 0;
+            display: block;
+            width: 100%;
+            border-bottom: 1px solid #fed7aa;
+            line-height: 1.4;
+            padding-bottom: 0.25rem;
+        }
+
+        @media (min-width: 768px) {
+            .chapter-subtitle {
+                font-size: 1.15rem;
+                margin: 2rem 0 1rem 0;
+            }
+        }
+
         /* --- Verse Styling: Inline Mode --- */
         .verse-inline {
             display: inline;
             position: relative;
-            padding: 4px 0;
+            padding: 2px 0;
             cursor: pointer;
             transition: background-color 0.2s;
             border-radius: 4px;
@@ -135,22 +157,23 @@
         /* --- Verse Styling: Block Mode --- */
         .verse-block {
             position: relative;
-            padding: 10px;
+            padding: 6px 8px;
+            /* Tighter padding */
             margin-bottom: 0;
             border-left: 3px solid transparent;
             background-color: white;
-            border-radius: 6px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            line-height: 1.5;
+            border-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+            line-height: 1.4;
+            /* Tighter line height */
             font-size: 1rem;
-            /* Slightly smaller for side-by-side mobile */
         }
 
         @media (min-width: 768px) {
             .verse-block {
-                font-size: 1.3rem;
-                line-height: 1.6;
-                padding: 16px;
+                font-size: 1.25rem;
+                line-height: 1.5;
+                padding: 10px;
             }
         }
 
@@ -192,15 +215,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             /* Forced side-by-side */
-            gap: 0.75rem;
-            /* Tight gap for mobile */
+            gap: 0.5rem;
+            /* Very tight gap for mobile density */
             align-items: start;
-            /* Align tops of verses */
         }
 
         @media (min-width: 1024px) {
             .parallel-grid {
-                gap: 3rem;
+                gap: 2rem;
                 max-width: 100%;
             }
         }
@@ -473,7 +495,7 @@
 
             <!-- Parallel Headers: Matched Gap to Grid -->
             <div id="parallelHeaders"
-                class="hidden grid-cols-2 gap-3 md:gap-8 mb-4 pb-2 border-b border-orange-200 sticky top-0 bg-[#fff7ed]/95 backdrop-blur z-10 pt-2 text-left">
+                class="hidden grid-cols-2 gap-2 md:gap-8 mb-4 pb-2 border-b border-orange-200 sticky top-0 bg-[#fff7ed]/95 backdrop-blur z-10 pt-2 text-left">
                 <div class="font-bold text-orange-800 text-xs md:text-sm uppercase tracking-widest pl-1">LES <span
                         class="hidden md:inline text-orange-300 font-normal ml-2">Septuagint</span></div>
                 <div class="font-bold text-orange-800 text-xs md:text-sm uppercase tracking-widest pl-1">NASB</div>
@@ -662,13 +684,27 @@
             }
         }
 
-        window.loadChapter = async function (book, chapter) {
+        // Updated loadChapter with keepSelection flag
+        window.loadChapter = async function (book, chapter, keepSelection = false) {
+            // Handle Selection Persistence
+            let versesToRestore = [];
+            if (keepSelection) {
+                state.selectedVerses.forEach(ref => {
+                    const parts = ref.split('|'); // Book|Chapter|Verse
+                    versesToRestore.push(parseInt(parts[2]));
+                });
+            }
+
+            // Clear old selection (state and DOM)
+            clearSelection();
+
             state.book = book;
             state.chapter = chapter;
 
             document.getElementById('currentBookTitle').textContent = book;
             document.getElementById('currentChapterDisplay').textContent = chapter;
 
+            // Strict Active Check
             document.querySelectorAll('.chapter-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`.chapter-btn[data-book="${book}"][data-chapter="${chapter}"]`);
             if (activeBtn) {
@@ -679,6 +715,21 @@
 
             updateReadButtonState();
             renderVerses();
+
+            // Restore Selection if needed
+            if (keepSelection && versesToRestore.length > 0) {
+                versesToRestore.forEach(vNum => {
+                    const refId = `${book}|${chapter}|${vNum}`;
+                    const el = document.querySelector(`[data-ref="${refId}"]`);
+                    if (el) {
+                        state.selectedVerses.add(refId);
+                        const els = document.querySelectorAll(`[data-ref="${refId}"]`);
+                        els.forEach(e => e.classList.add('selected'));
+                    }
+                });
+                updateActionBar();
+            }
+
             closeMobileSidebar();
         }
 
@@ -690,7 +741,6 @@
 
             if (isParallel) {
                 contentDiv.className = "parallel-grid min-h-[50vh] pb-[env(safe-area-inset-bottom)] bible-text";
-                // Show headers: Grid for desktop, Flex row for mobile alignment? No, grid works best.
                 headers.classList.remove('hidden');
                 headers.classList.add('grid'); // Force grid even on mobile
             } else {
@@ -720,16 +770,41 @@
                 const isBookmarked = isVerseBookmarked(state.book, state.chapter, v.verse);
                 const refId = `${state.book}|${state.chapter}|${v.verse}`;
 
+                // --- Subtitle Logic ---
+                const processText = (rawText) => {
+                    let text = rawText || "";
+                    let subtitle = null;
+                    const match = text.match(/\$(.*?)\$/);
+                    if (match) {
+                        subtitle = match[1];
+                        text = text.replace(/\$(.*?)\$/, "").trim();
+                    }
+                    return { text, subtitle };
+                };
+
+                const lesData = processText(v.text.LES);
+
+                // Only render subtitle if in Single View AND subtitle exists
+                if (lesData.subtitle && !isParallel) {
+                    const subEl = document.createElement('h3');
+                    subEl.className = "chapter-subtitle col-span-full";
+                    subEl.textContent = lesData.subtitle;
+                    contentDiv.appendChild(subEl);
+                }
+
                 if (isParallel) {
                     const versions = ['LES', 'NASB'];
                     versions.forEach(ver => {
+                        // Always process text to strip $$ even if we don't show the subtitle header
+                        const verData = processText(v.text[ver]);
+
                         const el = document.createElement('div');
                         el.className = `verse-block rounded shadow-sm border border-stone-100 ${isBookmarked && ver === 'LES' ? 'bookmarked' : ''}`;
                         el.dataset.ref = refId;
                         el.dataset.ver = ver;
                         el.innerHTML = `
                             <span class="verse-num-block">${v.verse}</span>
-                            <span class="text-base text-stone-800 leading-relaxed">${v.text[ver] || "—"}</span>
+                            <span class="text-base text-stone-800 leading-relaxed">${verData.text || "—"}</span>
                         `;
                         el.onclick = (e) => toggleSelection(e, refId);
                         contentDiv.appendChild(el);
@@ -739,7 +814,7 @@
                     el.className = `verse-inline ${isBookmarked ? 'bookmarked' : ''}`;
                     el.dataset.ref = refId;
                     el.dataset.ver = 'LES';
-                    el.innerHTML = `<sup class="verse-num-inline">${v.verse}</sup>${v.text.LES || ""} `;
+                    el.innerHTML = `<sup class="verse-num-inline">${v.verse}</sup>${lesData.text || ""} `;
                     el.onclick = (e) => toggleSelection(e, refId);
                     contentDiv.appendChild(el);
                 }
@@ -818,6 +893,9 @@
                     } else {
                         text = el.querySelector('span.text-base')?.textContent || el.textContent.replace(/^\d+/, '');
                     }
+
+                    // Remove $subtitle$ markers if present in raw text
+                    text = text.replace(/\$(.*?)\$/, "").trim();
 
                     // Split into interactive words
                     const words = text.trim().split(/\s+/);
@@ -1112,8 +1190,10 @@
                 document.getElementById('viewLabel').textContent = state.viewMode === 'single' ? 'Parallel' : 'Single';
                 renderVerses();
             };
-            document.getElementById('prevChapter').onclick = () => { if (state.chapter > 1) loadChapter(state.book, state.chapter - 1); };
-            document.getElementById('nextChapter').onclick = () => { if (state.chapter < (BIBLE_STRUCTURE[state.book] || 50)) loadChapter(state.book, state.chapter + 1); };
+
+            // Updated Arrows to Pass true for keepSelection
+            document.getElementById('prevChapter').onclick = () => { if (state.chapter > 1) loadChapter(state.book, state.chapter - 1, true); };
+            document.getElementById('nextChapter').onclick = () => { if (state.chapter < (BIBLE_STRUCTURE[state.book] || 50)) loadChapter(state.book, state.chapter + 1, true); };
 
             document.getElementById('openSidebar').onclick = openMobileSidebar;
             document.getElementById('closeSidebar').onclick = closeMobileSidebar;
